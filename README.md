@@ -4,6 +4,8 @@ Some tips / things of notes for myself while I'm learning PyTorch
 
 ## What is PyTorch?
 
+PyTorch is an open-source machine learning library widely used in academia and industry for building deep learning models. It offers dynamic computation graphs that provide flexibility and ease in debugging, making it especially suited for research and complex model development. PyTorch accelerates the training of models through efficient computaitons. It seamlessly integrates with GPU for enhanced computational speed, making it ideal for handling large-scale data in AI applications. It is particularly useful in fields like genomics, where understanding patterns in large volumes of data can lead to breakthroughs in understanding complex natural phenomena.
+
 ![A PyTorch Workflow](what-is-pytorch.png)
 
 ## Running PyTorch

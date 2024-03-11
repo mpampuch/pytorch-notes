@@ -4,6 +4,8 @@ Some tips / things of notes for myself while I'm learning PyTorch
 
 ## What is PyTorch?
 
+![A PyTorch Workflow](what-is-pytorch.png)
+
 ## Running PyTorch
 
 ## Converting between Numpy arrays and PyTorch tensors

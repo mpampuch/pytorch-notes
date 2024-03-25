@@ -123,6 +123,12 @@ tensor([[True, True, True, True],
         [True, True, True, True]])
 ```
 
+Additionally, if you want to set the manual seed on a GPU, use
+
+```python
+torch.cuda.manual_seed(seed)
+```
+
 ## Device agnostic code
 
 One of the most common errors in deep learning code is encountering a device error with some data or object in code. For example, you could try to multiply a tensor on a CPU with a tensor on a GPU and these two tensors will not be able to *find each other*, resulting in an error. 

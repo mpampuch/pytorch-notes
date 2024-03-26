@@ -10,6 +10,8 @@ PyTorch is an open-source machine learning library widely used in academia and i
 
 ## Running PyTorch
 
+The best place to get started running PyTorch code is with [Google Colab](https://colab.research.google.com/). It is a cloud-based Jupyter notebook environment provided by Google that allows users to write and execute Python code collaboratively in real-time. It comes pre-installed with PyTorch and a bunch of other useful libraries for data science and machine learning and it offers free access to GPUs and TPUs (this access is not guaranteed 24/7 but a lot of time you will be allocated a free device). 
+
 ## Tensors
 
 Tensors are mathematical objects that generalize scalars, vectors, and matrices to higher dimensions. They are fundamental objects in linear algebra. 
@@ -160,6 +162,56 @@ This will ensure all data is on the same device, especially if a GPU is not avai
 ## Loss functions
 - BCEWithLogitsLoss() # Binary classification
     - Combines sigmoid activation function with BCELoss. Better than BCELoss because more numerically stable
+
+## Saving a model 
+
+## Organising PyTorch projects
+
+Once you have a machine learning project that you want to save, it may be a good idea to organize it into modules. 
+
+![Modules](modules.png)
+
+You may want the model to be launched from a command line executable. 
+
+![PyTorch from the command line](command-line-pytorch.png)
+
+Notebooks are fantastic for iteratively exploring and running experiments quickly.
+
+However, for larger scale projects you may find Python scripts more reproducible and easier to run.
+
+There's arguments for both sides.
+
+| |**Pros**|**Cons**|
+|:----|:----|:----|
+|**Notebooks**|Easy to experiment/get started|Versioning can be hard|
+| |Easy to share (e.g. a link to a Google Colab notebook)|Hard to use only specific parts|
+| |Very visual|Text and graphics can get in the way of code|
+
+| |**Pros**|**Cons**|
+|:----|:----|:----|
+|**Python scripts**|Can package code together (saves rewriting similar code across different notebooks)|Experimenting isn't as visual (usually have to run the whole script rather than one cell)|
+| |Can use git for versioning| |
+| |Many open source projects use scripts| |
+| |Larger projects can be run on cloud vendors (not as much support for notebooks)| |
+
+In anycase, a good workflow is to start on Google Colab and move important code to scripts if you would like
+
+![PyTorch Workflow](pytorch-workflow.png)
+
+### Jupyter cell magic commands
+
+Jupyter cell magic commands are special commands that can be used in Jupyter notebooks to perform various tasks or change the behavior of code cells. These commands are preceded by one or two percent signs (`%` or `%%`) and are often used to streamline common tasks, interact with the notebook environment, or access system-level functionalities.
+
+A very useful magic command to help convert the code in the code cell into a script is the `%%writefile` command. It's used as follows:
+
+```
+%%writefile DIR_NAME/SCRIPT_NAME.py
+
+# Your Python code goes here
+```
+
+Executing this code cell will write all the code in the code cell into a script in the provided path.
+
 
 ## `model.parameters` vs `model.state_dict`
 

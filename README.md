@@ -165,6 +165,8 @@ This will ensure all data is on the same device, especially if a GPU is not avai
 
 ## Saving a model 
 
+
+
 ## Organising PyTorch projects
 
 Once you have a machine learning project that you want to save, it may be a good idea to organize it into modules. 
@@ -186,9 +188,7 @@ There's arguments for both sides.
 |**Notebooks**|Easy to experiment/get started|Versioning can be hard|
 | |Easy to share (e.g. a link to a Google Colab notebook)|Hard to use only specific parts|
 | |Very visual|Text and graphics can get in the way of code|
-
-| |**Pros**|**Cons**|
-|:----|:----|:----|
+| | 
 |**Python scripts**|Can package code together (saves rewriting similar code across different notebooks)|Experimenting isn't as visual (usually have to run the whole script rather than one cell)|
 | |Can use git for versioning| |
 | |Many open source projects use scripts| |
@@ -219,9 +219,16 @@ Executing this code cell will write all the code in the code cell into a script 
 
 ## `model.train()`, `model.eval()`, and `torch.inference_mode()` 
 
-## Minibatches, multiples of 8, and not going higher than 32
 
 ## Multiples of 8
+
+Multiples of 8 are often recommended for machine learning, particularly in neural network architectures, due to their compatibility with hardware optimizations, specifically related to parallel processing and memory alignment. You should strive to use as many multiples of 8 (i.e. 8, 16, 32, 64, 128, 256, etc.) for hyperparameters such as number of units in hidden layers, batch sizes, etc.
+
+### Minibatches, multiples of 8, and not going higher than 32
+
+Mini-batches are subsets of a dataset used during the training process of machine learning models, particularly in deep learning. Instead of feeding the entire dataset into the model at once, mini-batch training involves dividing the dataset into smaller batches and processing each batch sequentially during training. 
+
+In that same vain as above, minibatches should also be set to multiples of 8, but also it is often recommended to use minibatches of around 32, as this strikes a balance between utilizing GPU memory efficiently and allowing for a reasonable training speed.
 
 ## SciKitLearn train/test split
 
@@ -240,3 +247,21 @@ from tqdm.auto import tqdm
 for i in tqdm(range(10000)):
     ...
 ```
+
+## Transfer learning 
+
+Transfer learning is a machine learning technique where a model trained on one task is adapted or transferred to a related but different task. Instead of training a model from scratch, transfer learning leverages knowledge gained from solving one problem to help solve a different but related problem. This approach is particularly useful when working with limited data or computational resources and can significantly reduce training time and improve performance.
+
+Often times machine learning architects will start a new data science project by using another trained model as a backbone and modifying it for their purpose 
+
+### "Freezing" and "Unfreezing"
+
+### Resources for finding pre-trained models 
+
+|**Location**|**What's there?**|**Link(s)**|
+|:----|:----|:----|
+|**PyTorch domain libraries**|Each of the PyTorch domain libraries (`torchvision`, `torchtext`) come with pretrained models of some form. The models there work right within PyTorch.|[`torchvision.models`](https://pytorch.org/vision/stable/models.html), [`torchtext.models`](https://pytorch.org/text/main/models.html), [`torchaudio.models`](https://pytorch.org/audio/stable/models.html), [`torchrec.models`](https://pytorch.org/torchrec/torchrec.models.html)|
+|**HuggingFace Hub**|A series of pretrained models on many different domains (vision, text, audio and more) from organizations around the world. There's plenty of different datasets too.|https://huggingface.co/models, https://huggingface.co/datasets|
+|**`timm` (PyTorch Image Models) library**|Almost all of the latest and greatest computer vision models in PyTorch code as well as plenty of other helpful computer vision features.|https://github.com/rwightman/pytorch-image-models|
+|**Paperswithcode**|A collection of the latest state-of-the-art machine learning papers with code implementations attached. You can also find benchmarks here of model performance on different tasks.|https://paperswithcode.com/|
+

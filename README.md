@@ -265,3 +265,41 @@ Often times machine learning architects will start a new data science project by
 |**`timm` (PyTorch Image Models) library**|Almost all of the latest and greatest computer vision models in PyTorch code as well as plenty of other helpful computer vision features.|https://github.com/rwightman/pytorch-image-models|
 |**Paperswithcode**|A collection of the latest state-of-the-art machine learning papers with code implementations attached. You can also find benchmarks here of model performance on different tasks.|https://paperswithcode.com/|
 
+## Experiment tracking
+
+If you're running lots of different experiments, experiment tracking helps you figure out what works and what doesn't.
+
+
+Why track experiments?
+If you're only running a handful of models (like we've done so far), it might be okay just to track their results in print outs and a few dictionaries.
+
+However, as the number of experiments you run starts to increase, this naive way of tracking could get out of hand. So if you keep experimenting with models you'll want a way to track them.
+
+There are as many different ways to track machine learning experiments as there is experiments to run.
+
+This table covers a few.
+
+|**Method**|**Setup**|**Pros**|**Cons**|**Cost**|
+|:----|:----|:----|:----|:----|
+|Python dictionaries, CSV files, print outs|None|Easy to setup, runs in pure Python|Hard to keep track of large numbers of experiments|Free|
+|[TensorBoard](https://www.tensorflow.org/tensorboard/get_started)|Minimal, install [`tensorboard`](https://pypi.org/project/tensorboard/)|Extensions built into PyTorch, widely recognized and used, easily scales.|User-experience not as nice as other options.|Free|
+|[Weights & Biases Experiment Tracking](https://wandb.ai/site/experiment-tracking)|Minimal, install [`wandb`](https://docs.wandb.ai/quickstart), make an account|Incredible user experience, make experiments public, tracks almost anything.|Requires external resource outside of PyTorch.|Free for personal use|
+|[MLFlow](https://mlflow.org/)|Minimal, install `mlflow` and starting tracking|Fully open-source MLOps lifecycle management, many integrations.|Little bit harder to setup a remote tracking server than other services.|Free|
+
+### TensorBoard
+
+TensorBoard is a part of the TensorFlow deep learning library and is an excellent way to visualize different parts of your model.
+
+### Creating Tensorboard compatible files
+
+We can use PyTorch's `torch.utils.tensorboard.SummaryWriter()` class to save various parts of our model's training progress to file.
+
+By default, the `SummaryWriter()` class saves various information about our model to a file set by the `log_dir` parameter.
+
+The default location for `log_dir` is under `runs/CURRENT_DATETIME_HOSTNAME`, where the `HOSTNAME` is the name of your computer. You can change where your experiments are tracked and customize the filename as you'd like.
+
+The outputs of the `SummaryWriter()` are saved in TensorBoard format, which makes them compatible with the TensorBoard display.
+
+
+
+

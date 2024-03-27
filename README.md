@@ -20,6 +20,42 @@ Tensors are used extensively in various fields, including physics (especially in
 
 All data inputted and outputted out of models in PyTorch need to be represented as tensors.
 
+### Tensor Size, Shape and Dimensions
+
+In PyTorch, it's important to not conflate the concepts of tensor dimensions and tensor size and shape.
+
+The number of dimensions that a tensor has can basically be determined by counting the number of square bracket pairs it has and can be found using `.ndim`
+
+Example:
+
+```python
+TENSOR = torch.tensor([[[1, 2, 3],
+                        [3, 6, 9],
+                        [2, 4, 5]]])
+
+
+TENSOR.ndim
+# Outputs 3
+```
+
+Tensor size and tensor shape are identical. They can be used to figure out the size of *each* dimension individually.
+
+Example:
+
+```python
+TENSOR = torch.tensor([[[1, 2, 3],
+                        [3, 6, 9],
+                        [2, 4, 5]]])
+
+
+TENSOR.shape
+# Outputs torch.Size([1, 3, 3])
+
+TENSOR.size()
+# Outputs torch.Size([1, 3, 3])
+```
+
+
 ### Converting between Numpy arrays and PyTorch tensors
 
 Converting data between NumPy arrays and PyTorch tensors is a routine task. PyTorch tensors are similar to NumPy’s ndarrays, except that tensors can run on GPUs or other hardware accelerators. In fact, tensors and NumPy arrays can often share the same underlying memory, eliminating the need to copy data. There's 2 important difference that you have to remember when converting between the two objects.
@@ -35,7 +71,6 @@ To convert NumPy arrays to PyTorch tensors, use the followings code and tools.
 - PyTorch tensor, want in NumPy array -> `torch.Tensor.numpy()`
 - For type coersion, `torch.from_numpy(ndarray).type(torch.float32)` 
 - To convert PyTorch data on GPU to Numpy, use `Tensor.cpu()`
-
 
 ## Random Seeds 
 
@@ -166,6 +201,15 @@ This will ensure all data is on the same device, especially if a GPU is not avai
 ## Saving a model 
 
 
+### Loading a model
+
+## PyTorch important tools and libraries
+
+One of the benefits of Google Colab is that it comes pre-installed wiht a lot of useful PyTorch tools that help out with different parts of the workflow. 
+
+Some of them are listed here
+
+![A PyTorch Workflow with Specific Tools](pytorch-workflow-detailed.png)
 
 ## Organising PyTorch projects
 

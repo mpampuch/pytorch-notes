@@ -300,6 +300,9 @@ The default location for `log_dir` is under `runs/CURRENT_DATETIME_HOSTNAME`, wh
 
 The outputs of the `SummaryWriter()` are saved in TensorBoard format, which makes them compatible with the TensorBoard display.
 
+## Extra Resources
 
+- [To help understand CNN's](https://poloclub.github.io/cnn-explainer/)
+- [To help understand Transformers](https://jalammar.github.io/illustrated-transformer/)
 
 

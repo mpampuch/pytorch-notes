@@ -367,7 +367,7 @@ In that same vain as above, minibatches should also be set to multiples of 8, bu
 
 ## TorchMetrics
 
-`torchmetrics` is a library in PyTorch specifically designed for efficient metrics computation in machine learning and deep learning tasks. It provides a wide range of metrics commonly used for evaluating model performance during training and validation. Some of these include:
+TorchMetrics is a library in PyTorch specifically designed for efficient metrics computation in machine learning and deep learning tasks. It provides a wide range of metrics commonly used for evaluating model performance during training and validation. Some of these include:
 
 |**Metric name/Evaluation method**|**Defintion**|**Code**|
 |:----|:----|:----|
@@ -377,6 +377,26 @@ In that same vain as above, minibatches should also be set to multiples of 8, bu
 |F1-score|Combines precision and recall into one metric. 1 is best, 0 is worst.|[`torchmetrics.F1Score()`](https://torchmetrics.readthedocs.io/en/stable/classification/f1_score.html#f1score) or [`sklearn.metrics.f1_score()`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html)|
 |[Confusion matrix](https://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/)|Compares the predicted values with the true values in a tabular way, if 100% correct, all values in the matrix will be top left to bottom right (diagnol line).|[`torchmetrics.ConfusionMatrix`](https://torchmetrics.readthedocs.io/en/stable/classification/confusion_matrix.html#confusionmatrix) or [`sklearn.metrics.plot_confusion_matrix()`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.ConfusionMatrixDisplay.html#sklearn.metrics.ConfusionMatrixDisplay.from_predictions)|
 |Classification report|Collection of some of the main classification metrics such as precision, recall and f1-score.|[`sklearn.metrics.classification_report()`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html)|
+
+### Installing and Using TorchMetrics
+
+TorchMetrics *does not come pre-intstalled on Google Colab*, therefore you have to manually install it. Additionally, it is important to remember *send your accuracy model to your target device* in order for it to be able to interact with your data.
+
+The following template code shows how to install and use TorchMetrics:
+
+```python
+try:
+    from torchmetrics import Accuracy
+except:
+    !pip install torchmetrics
+    from torchmetrics import Accuracy
+
+# Setup metric and make sure it's on the target device
+torchmetrics_accuracy = Accuracy(task='multiclass', num_classes=4).to(device)
+
+# Calculate accuracy
+torchmetrics_accuracy(y_preds, y_test)
+```
 
 ### Precision vs Recall
 

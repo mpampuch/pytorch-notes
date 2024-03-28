@@ -26,27 +26,17 @@ In PyTorch, it's important to not conflate the concepts of tensor dimensions and
 
 The number of dimensions that a tensor has can basically be determined by counting the number of square bracket pairs it has and can be found using `.ndim`
 
+Tensor size and tensor shape are identical. They can be used to figure out the size of *each* dimension individually using `.shape` or `.size()`.
+
 Example:
 
 ```python
 TENSOR = torch.tensor([[[1, 2, 3],
                         [3, 6, 9],
                         [2, 4, 5]]])
-
 
 TENSOR.ndim
 # Outputs 3
-```
-
-Tensor size and tensor shape are identical. They can be used to figure out the size of *each* dimension individually.
-
-Example:
-
-```python
-TENSOR = torch.tensor([[[1, 2, 3],
-                        [3, 6, 9],
-                        [2, 4, 5]]])
-
 
 TENSOR.shape
 # Outputs torch.Size([1, 3, 3])
@@ -55,6 +45,9 @@ TENSOR.size()
 # Outputs torch.Size([1, 3, 3])
 ```
 
+Pictured Example:
+
+![Tensor size vs dimensions](tensor-size.png)
 
 ### Converting between Numpy arrays and PyTorch tensors
 
@@ -71,6 +64,159 @@ To convert NumPy arrays to PyTorch tensors, use the followings code and tools.
 - PyTorch tensor, want in NumPy array -> `torch.Tensor.numpy()`
 - For type coersion, `torch.from_numpy(ndarray).type(torch.float32)` 
 - To convert PyTorch data on GPU to Numpy, use `Tensor.cpu()`
+
+## Device agnostic code
+
+One of the most common errors in deep learning code is encountering a device error with some data or object in code. For example, you could try to multiply a tensor on a CPU with a tensor on a GPU and these two tensors will not be able to *find each other*, resulting in an error. 
+
+Good machine learning code should never run into this error because the code should be **device agnostic**. To set up device agnostic code, write this code near the top of your script
+
+```python
+# Set up device agnostic code
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
+```
+
+Then when you want to set the device attribute on piece of data or model, write 
+
+```python
+torch.Tensor.to(device)
+```
+
+This will ensure all data is on the same device, especially if a GPU is not available.
+
+**Note:** If you are working with NumPy data, that data can only exist on a CPU. If a GPU is available and PyTorch data is sent to the GPU, you can still encounter device errors when working with these two types of data. Use `torch.Tensor.cpu()` on NumPy data to fix this.
+
+## Creating a machine learning model in PyTorch
+
+Creating a model follows the following blueprint
+
+![Creating a machine learning model diagram](creating-a-model.png)
+
+The first line declares a class with whatever name you want for your model and that inherits from `nn.Module`. This is the base class for all neural network modules in PyTorch. 
+
+The constructor function (`def __init__(self):`) is called every time you create an instance of the class. Inside the constructor, `super().__init__()` is called. This line calls the constructor of the superclass (`nn.Module`). 
+In Python, `super()` is a built-in function that returns a proxy object that delegates method calls to a parent or superclass.
+
+When you call `super().__init__()`, you are essentially calling the constructor (`__init__` method) of the superclass, which in this case is `nn.Module`. This line initializes the superclass, ensuring that any necessary setup defined in the superclass's constructor is executed before initializing the current class. 
+
+By calling `super().__init__()`, you ensure that the subclass inherits all the attributes and methods of the superclass, which is essential for the proper functioning of the subclass and initialize the neural network module.
+
+### the `forward` method
+
+The `forward` method in a PyTorch `nn.Module` subclass defines the computation performed when the module is called with input data. This method outlines how input data flows through the network's layers to produce an output (defines the forward computation of the model). It ***must*** be overwritten for any class that inherits from `nn.Module` in order for the model to work (otherwise the model doesn't know how to pass the data through the layers).
+
+## `nn.Module` and the `forward` method
+
+
+(IMG_4323.PNG)
+
+## Loss functions
+- BCEWithLogitsLoss() # Binary classification
+    - Combines sigmoid activation function with BCELoss. Better than BCELoss because more numerically stable
+
+## Running a train/test loop
+
+### `optimizer.zero_grad()`
+
+`optimizer.zero_grad()` is used to clear the gradients of all optimized tensors. Here's why it's necessary:
+
+**Accumulation of Gradients**: During the backward pass, gradients are computed and accumulated in the .grad attribute of each parameter tensor. If you don't zero the gradients before the next backward pass, the new gradients will be added to the existing ones, leading to incorrect gradient values.
+
+**Preventing Gradient Accumulation**: In many cases, you want to compute gradients for each batch of data separately. If you accumulate gradients across multiple batches, it effectively results in a larger batch size, which can lead to less stable training and divergence of the optimization process.
+
+**Efficiency**: Zeroing the gradients also helps in memory efficiency. By clearing the gradients after each optimization step, you free up memory that would otherwise be occupied by the gradients of previous batches.
+
+In summary, optimizer.zero_grad() ensures that you start each optimization step with fresh gradients, avoiding gradient accumulation issues and improving training stability and efficiency. It's an essential step in the training loop when using gradient-based optimization algorithms like stochastic gradient descent (SGD), Adam, etc.
+
+### `optimizer.step()`
+
+When you call the `.step()` function on an optimizer in PyTorch, it performs a single optimization step. Here's what happens during this step:
+
+**Gradient Computation**: If you've previously performed a backward pass (by calling the backward() function on the loss tensor), gradients have been computed for all parameters that have requires_grad=True. These gradients are stored in the .grad attribute of each parameter tensor.
+
+**Parameter Update**: The optimizer uses these computed gradients to update the parameters. The update rule depends on the optimization algorithm being used. For example, in stochastic gradient descent (SGD), the update rule for a parameter 
+
+
+gradients to update the parameters. The update rule depends on the optimization algorithm being used. For example, in stochastic gradient descent (SGD), the update rule for a parameter $\theta$ is:
+
+$$\theta_{\text {new }}=\theta_{\text {old }}- \text {learning\_rate} \times \text{gradient}$$
+
+The learning rate controls the step size of the update. Other optimization algorithms like Adam, Adagrad, etc., have more sophisticated update rules.
+
+**Gradient Clearing**: After the parameter update, the gradients are cleared for the next iteration. This prevents gradients from accumulating across multiple backward() calls.
+
+Calling `optimizer.step()` thus iterates through all the parameters registered with the optimizer, updates them according to their respective gradients and the optimization algorithm's update rule, and clears the gradients for the next iteration. This process is central to the training loop of a neural network, where parameters are iteratively updated to minimize the loss function and improve the model's performance.
+
+
+
+
+
+
+## Saving a model 
+
+
+### Loading a model
+
+## PyTorch important tools and libraries
+
+One of the benefits of Google Colab is that it comes pre-installed wiht a lot of useful PyTorch tools that help out with different parts of the workflow. 
+
+Some of them are listed here
+
+![A PyTorch Workflow with Specific Tools](pytorch-workflow-detailed.png)
+
+## Organising PyTorch projects
+
+Once you have a machine learning project that you want to save, it may be a good idea to organize it into modules. 
+
+![Modules](modules.png)
+
+You may want the model to be launched from a command line executable. 
+
+![PyTorch from the command line](command-line-pytorch.png)
+
+Notebooks are fantastic for iteratively exploring and running experiments quickly.
+
+However, for larger scale projects you may find Python scripts more reproducible and easier to run.
+
+There's arguments for both sides.
+
+| |**Pros**|**Cons**|
+|:----|:----|:----|
+|**Notebooks**|Easy to experiment/get started|Versioning can be hard|
+| |Easy to share (e.g. a link to a Google Colab notebook)|Hard to use only specific parts|
+| |Very visual|Text and graphics can get in the way of code|
+| | 
+|**Python scripts**|Can package code together (saves rewriting similar code across different notebooks)|Experimenting isn't as visual (usually have to run the whole script rather than one cell)|
+| |Can use git for versioning| |
+| |Many open source projects use scripts| |
+| |Larger projects can be run on cloud vendors (not as much support for notebooks)| |
+
+In anycase, a good workflow is to start on Google Colab and move important code to scripts if you would like
+
+![PyTorch Workflow](pytorch-workflow.png)
+
+### Jupyter cell magic commands
+
+Jupyter cell magic commands are special commands that can be used in Jupyter notebooks to perform various tasks or change the behavior of code cells. These commands are preceded by one or two percent signs (`%` or `%%`) and are often used to streamline common tasks, interact with the notebook environment, or access system-level functionalities.
+
+A very useful magic command to help convert the code in the code cell into a script is the `%%writefile` command. It's used as follows:
+
+```
+%%writefile DIR_NAME/SCRIPT_NAME.py
+
+# Your Python code goes here
+```
+
+Executing this code cell will write all the code in the code cell into a script in the provided path.
+
+
+## `model.parameters` vs `model.state_dict`
+
+
+
+## `model.train()`, `model.eval()`, and `torch.inference_mode()` 
 
 ## Random Seeds 
 
@@ -166,104 +312,6 @@ Additionally, if you want to set the manual seed on a GPU, use
 torch.cuda.manual_seed(seed)
 ```
 
-## Device agnostic code
-
-One of the most common errors in deep learning code is encountering a device error with some data or object in code. For example, you could try to multiply a tensor on a CPU with a tensor on a GPU and these two tensors will not be able to *find each other*, resulting in an error. 
-
-Good machine learning code should never run into this error because the code should be **device agnostic**. To set up device agnostic code, write this code near the top of your script
-
-```python
-# Set up device agnostic code
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"Using device: {device}")
-```
-
-Then when you want to set the device attribute on piece of data or model, write 
-
-```python
-torch.Tensor.to(device)
-```
-
-This will ensure all data is on the same device, especially if a GPU is not available.
-
-**Note:** If you are working with NumPy data, that data can only exist on a CPU. If a GPU is available and PyTorch data is sent to the GPU, you can still encounter device errors when working with these two types of data. Use `torch.Tensor.cpu()` on NumPy data to fix this.
-
-## Creating a machine learning model in PyTorch
-![Creating a machine learning model diagram](creating-a-model.png)
-
-## `nn.Module` and the `forward` method
-(IMG_4323.PNG)
-
-## Loss functions
-- BCEWithLogitsLoss() # Binary classification
-    - Combines sigmoid activation function with BCELoss. Better than BCELoss because more numerically stable
-
-## Saving a model 
-
-
-### Loading a model
-
-## PyTorch important tools and libraries
-
-One of the benefits of Google Colab is that it comes pre-installed wiht a lot of useful PyTorch tools that help out with different parts of the workflow. 
-
-Some of them are listed here
-
-![A PyTorch Workflow with Specific Tools](pytorch-workflow-detailed.png)
-
-## Organising PyTorch projects
-
-Once you have a machine learning project that you want to save, it may be a good idea to organize it into modules. 
-
-![Modules](modules.png)
-
-You may want the model to be launched from a command line executable. 
-
-![PyTorch from the command line](command-line-pytorch.png)
-
-Notebooks are fantastic for iteratively exploring and running experiments quickly.
-
-However, for larger scale projects you may find Python scripts more reproducible and easier to run.
-
-There's arguments for both sides.
-
-| |**Pros**|**Cons**|
-|:----|:----|:----|
-|**Notebooks**|Easy to experiment/get started|Versioning can be hard|
-| |Easy to share (e.g. a link to a Google Colab notebook)|Hard to use only specific parts|
-| |Very visual|Text and graphics can get in the way of code|
-| | 
-|**Python scripts**|Can package code together (saves rewriting similar code across different notebooks)|Experimenting isn't as visual (usually have to run the whole script rather than one cell)|
-| |Can use git for versioning| |
-| |Many open source projects use scripts| |
-| |Larger projects can be run on cloud vendors (not as much support for notebooks)| |
-
-In anycase, a good workflow is to start on Google Colab and move important code to scripts if you would like
-
-![PyTorch Workflow](pytorch-workflow.png)
-
-### Jupyter cell magic commands
-
-Jupyter cell magic commands are special commands that can be used in Jupyter notebooks to perform various tasks or change the behavior of code cells. These commands are preceded by one or two percent signs (`%` or `%%`) and are often used to streamline common tasks, interact with the notebook environment, or access system-level functionalities.
-
-A very useful magic command to help convert the code in the code cell into a script is the `%%writefile` command. It's used as follows:
-
-```
-%%writefile DIR_NAME/SCRIPT_NAME.py
-
-# Your Python code goes here
-```
-
-Executing this code cell will write all the code in the code cell into a script in the provided path.
-
-
-## `model.parameters` vs `model.state_dict`
-
-
-
-## `model.train()`, `model.eval()`, and `torch.inference_mode()` 
-
-
 ## Multiples of 8
 
 Multiples of 8 are often recommended for machine learning, particularly in neural network architectures, due to their compatibility with hardware optimizations, specifically related to parallel processing and memory alignment. You should strive to use as many multiples of 8 (i.e. 8, 16, 32, 64, 128, 256, etc.) for hyperparameters such as number of units in hidden layers, batch sizes, etc.
@@ -344,9 +392,60 @@ The default location for `log_dir` is under `runs/CURRENT_DATETIME_HOSTNAME`, wh
 
 The outputs of the `SummaryWriter()` are saved in TensorBoard format, which makes them compatible with the TensorBoard display.
 
+## Figuring out if you're on a GPU
+
+To check if you're running on a GPU in Google Collab, you can run
+
+```python
+torch.cuda.is_available()
+```
+
+which will return `true` or `false` based on whether or not you are on a GPU
+
+If a GPU is available, you can check details for it using the following command in Google Colab
+
+```bash
+!nvidia-smi
+```
+
+which will output something like this if you are running on a GPU
+
+```
+Wed Mar 27 13:41:05 2024       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  Tesla T4                       Off | 00000000:00:04.0 Off |                    0 |
+| N/A   33C    P8               9W /  70W |      3MiB / 15360MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|  No running processes found                                                           |
++---------------------------------------------------------------------------------------+
+```
+
+
 ## Extra Resources
 
 - [To help understand CNN's](https://poloclub.github.io/cnn-explainer/)
 - [To help understand Transformers](https://jalammar.github.io/illustrated-transformer/)
 
+## Adding batch dimensions
+
+with `.unsqueeze()`
+
+## `requires_grad()`
+
+## `.detach()`
+
+## Precision and Recall
 

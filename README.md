@@ -140,7 +140,7 @@ When you call the `.step()` function on an optimizer in PyTorch, it performs a s
 
 gradients to update the parameters. The update rule depends on the optimization algorithm being used. For example, in stochastic gradient descent (SGD), the update rule for a parameter $\theta$ is:
 
-$$\theta_{\text {new }}=\theta_{\text {old }}- \text {learning\_rate} \times \text{gradient}$$
+$$\theta_{\text {new }}=\theta_{\text {old }}- \text {learning-rate} \times \text{gradient}$$
 
 The learning rate controls the step size of the update. Other optimization algorithms like Adam, Adagrad, etc., have more sophisticated update rules.
 

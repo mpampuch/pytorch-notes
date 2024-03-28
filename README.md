@@ -12,6 +12,69 @@ PyTorch is an open-source machine learning library widely used in academia and i
 
 The best place to get started running PyTorch code is with [Google Colab](https://colab.research.google.com/). It is a cloud-based Jupyter notebook environment provided by Google that allows users to write and execute Python code collaboratively in real-time. It comes pre-installed with PyTorch and a bunch of other useful libraries for data science and machine learning and it offers free access to GPUs and TPUs (this access is not guaranteed 24/7 but a lot of time you will be allocated a free device). 
 
+## Device agnostic code
+
+One of the most common errors in deep learning code is encountering a device error with some data or object in code. For example, you could try to multiply a tensor on a CPU with a tensor on a GPU and these two tensors will not be able to *find each other*, resulting in an error. 
+
+Good machine learning code should never run into this error because the code should be **device agnostic**. To set up device agnostic code, write this code near the top of your script
+
+```python
+# Set up device agnostic code
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
+```
+
+Then when you want to set the device attribute on piece of data or model, write 
+
+```python
+torch.Tensor.to(device)
+```
+
+This will ensure all data is on the same device, especially if a GPU is not available.
+
+**Note:** If you are working with NumPy data, that data can only exist on a CPU. If a GPU is available and PyTorch data is sent to the GPU, you can still encounter device errors when working with these two types of data. Use `torch.Tensor.cpu()` on NumPy data to fix this.
+
+### Figuring out if you're on a GPU
+
+To check if you're running on a GPU in Google Collab, you can run
+
+```python
+torch.cuda.is_available()
+```
+
+which will return `true` or `false` based on whether or not you are on a GPU
+
+If a GPU is available, you can check details for it using the following command in Google Colab
+
+```bash
+!nvidia-smi
+```
+
+which will output something like this if you are running on a GPU
+
+```
+Wed Mar 27 13:41:05 2024       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  Tesla T4                       Off | 00000000:00:04.0 Off |                    0 |
+| N/A   33C    P8               9W /  70W |      3MiB / 15360MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|  No running processes found                                                           |
++---------------------------------------------------------------------------------------+
+```
+
 ## Tensors
 
 Tensors are mathematical objects that generalize scalars, vectors, and matrices to higher dimensions. They are fundamental objects in linear algebra. 
@@ -64,28 +127,6 @@ To convert NumPy arrays to PyTorch tensors, use the followings code and tools.
 - PyTorch tensor, want in NumPy array -> `torch.Tensor.numpy()`
 - For type coersion, `torch.from_numpy(ndarray).type(torch.float32)` 
 - To convert PyTorch data on GPU to Numpy, use `Tensor.cpu()`
-
-## Device agnostic code
-
-One of the most common errors in deep learning code is encountering a device error with some data or object in code. For example, you could try to multiply a tensor on a CPU with a tensor on a GPU and these two tensors will not be able to *find each other*, resulting in an error. 
-
-Good machine learning code should never run into this error because the code should be **device agnostic**. To set up device agnostic code, write this code near the top of your script
-
-```python
-# Set up device agnostic code
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"Using device: {device}")
-```
-
-Then when you want to set the device attribute on piece of data or model, write 
-
-```python
-torch.Tensor.to(device)
-```
-
-This will ensure all data is on the same device, especially if a GPU is not available.
-
-**Note:** If you are working with NumPy data, that data can only exist on a CPU. If a GPU is available and PyTorch data is sent to the GPU, you can still encounter device errors when working with these two types of data. Use `torch.Tensor.cpu()` on NumPy data to fix this.
 
 ## Creating a machine learning model in PyTorch
 
@@ -424,48 +465,6 @@ By default, the `SummaryWriter()` class saves various information about our mode
 The default location for `log_dir` is under `runs/CURRENT_DATETIME_HOSTNAME`, where the `HOSTNAME` is the name of your computer. You can change where your experiments are tracked and customize the filename as you'd like.
 
 The outputs of the `SummaryWriter()` are saved in TensorBoard format, which makes them compatible with the TensorBoard display.
-
-## Figuring out if you're on a GPU
-
-To check if you're running on a GPU in Google Collab, you can run
-
-```python
-torch.cuda.is_available()
-```
-
-which will return `true` or `false` based on whether or not you are on a GPU
-
-If a GPU is available, you can check details for it using the following command in Google Colab
-
-```bash
-!nvidia-smi
-```
-
-which will output something like this if you are running on a GPU
-
-```
-Wed Mar 27 13:41:05 2024       
-+---------------------------------------------------------------------------------------+
-| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |
-|-----------------------------------------+----------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
-|                                         |                      |               MIG M. |
-|=========================================+======================+======================|
-|   0  Tesla T4                       Off | 00000000:00:04.0 Off |                    0 |
-| N/A   33C    P8               9W /  70W |      3MiB / 15360MiB |      0%      Default |
-|                                         |                      |                  N/A |
-+-----------------------------------------+----------------------+----------------------+
-                                                                                         
-+---------------------------------------------------------------------------------------+
-| Processes:                                                                            |
-|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
-|        ID   ID                                                             Usage      |
-|=======================================================================================|
-|  No running processes found                                                           |
-+---------------------------------------------------------------------------------------+
-```
-
 
 ## Extra Resources
 

@@ -12,6 +12,59 @@ PyTorch is an open-source machine learning library widely used in academia and i
 
 The best place to get started running PyTorch code is with [Google Colab](https://colab.research.google.com/). It is a cloud-based Jupyter notebook environment provided by Google that allows users to write and execute Python code collaboratively in real-time. It comes pre-installed with PyTorch and a bunch of other useful libraries for data science and machine learning and it offers free access to GPUs and TPUs (this access is not guaranteed 24/7 but a lot of time you will be allocated a free device). 
 
+## Tensors
+
+Tensors are mathematical objects that generalize scalars, vectors, and matrices to higher dimensions. They are fundamental objects in linear algebra. 
+
+Tensors are used extensively in various fields, including physics (especially in theories like general relativity and electromagnetism), engineering (for modeling stress and strain in materials), computer science (in machine learning, particularly in deep learning frameworks), and many other areas where multidimensional data needs to be manipulated and analyzed.
+
+All data inputted and outputted out of models in PyTorch need to be represented as tensors.
+
+### Tensor Size, Shape and Dimensions
+
+In PyTorch, it's important to not conflate the concepts of tensor dimensions and tensor size and shape.
+
+The number of dimensions that a tensor has can basically be determined by counting the number of square bracket pairs it has and can be found using `.ndim`
+
+Tensor size and tensor shape are identical. They can be used to figure out the size of *each* dimension individually using `.shape` or `.size()`.
+
+Example:
+
+```python
+TENSOR = torch.tensor([[[1, 2, 3],
+                        [3, 6, 9],
+                        [2, 4, 5]]])
+
+TENSOR.ndim
+# Outputs 3
+
+TENSOR.shape
+# Outputs torch.Size([1, 3, 3])
+
+TENSOR.size()
+# Outputs torch.Size([1, 3, 3])
+```
+
+Pictured Example:
+
+![Tensor size vs dimensions](tensor-size.png)
+
+### Converting between Numpy arrays and PyTorch tensors
+
+Converting data between NumPy arrays and PyTorch tensors is a routine task. PyTorch tensors are similar to NumPy’s ndarrays, except that tensors can run on GPUs or other hardware accelerators. In fact, tensors and NumPy arrays can often share the same underlying memory, eliminating the need to copy data. There's 2 important difference that you have to remember when converting between the two objects.
+
+1. PyTorch and Numpy have different default data types
+    - NumPy arrays typically have a datatype of `float64` for floating-point numbers and `int64` for integers on most systems.
+    - PyTorch tensors have a default datatype of `float32`
+2. Numpy arrays cannot exist on a GPU, only a CPU, whereas PyTorch tensors can exist on both.
+
+To convert NumPy arrays to PyTorch tensors, use the followings code and tools.
+
+- Data in NumPy, want in PyTorch tensor -> `torch.from_numpy(ndarray)`
+- PyTorch tensor, want in NumPy array -> `torch.Tensor.numpy()`
+- For type coersion, `torch.from_numpy(ndarray).type(torch.float32)` 
+- To convert PyTorch data on GPU to Numpy, use `Tensor.cpu()`
+
 ## Device agnostic code
 
 One of the most common errors in deep learning code is encountering a device error with some data or object in code. For example, you could try to multiply a tensor on a CPU with a tensor on a GPU and these two tensors will not be able to *find each other*, resulting in an error. 
@@ -74,59 +127,6 @@ Wed Mar 27 13:41:05 2024
 |  No running processes found                                                           |
 +---------------------------------------------------------------------------------------+
 ```
-
-## Tensors
-
-Tensors are mathematical objects that generalize scalars, vectors, and matrices to higher dimensions. They are fundamental objects in linear algebra. 
-
-Tensors are used extensively in various fields, including physics (especially in theories like general relativity and electromagnetism), engineering (for modeling stress and strain in materials), computer science (in machine learning, particularly in deep learning frameworks), and many other areas where multidimensional data needs to be manipulated and analyzed.
-
-All data inputted and outputted out of models in PyTorch need to be represented as tensors.
-
-### Tensor Size, Shape and Dimensions
-
-In PyTorch, it's important to not conflate the concepts of tensor dimensions and tensor size and shape.
-
-The number of dimensions that a tensor has can basically be determined by counting the number of square bracket pairs it has and can be found using `.ndim`
-
-Tensor size and tensor shape are identical. They can be used to figure out the size of *each* dimension individually using `.shape` or `.size()`.
-
-Example:
-
-```python
-TENSOR = torch.tensor([[[1, 2, 3],
-                        [3, 6, 9],
-                        [2, 4, 5]]])
-
-TENSOR.ndim
-# Outputs 3
-
-TENSOR.shape
-# Outputs torch.Size([1, 3, 3])
-
-TENSOR.size()
-# Outputs torch.Size([1, 3, 3])
-```
-
-Pictured Example:
-
-![Tensor size vs dimensions](tensor-size.png)
-
-### Converting between Numpy arrays and PyTorch tensors
-
-Converting data between NumPy arrays and PyTorch tensors is a routine task. PyTorch tensors are similar to NumPy’s ndarrays, except that tensors can run on GPUs or other hardware accelerators. In fact, tensors and NumPy arrays can often share the same underlying memory, eliminating the need to copy data. There's 2 important difference that you have to remember when converting between the two objects.
-
-1. PyTorch and Numpy have different default data types
-    - NumPy arrays typically have a datatype of `float64` for floating-point numbers and `int64` for integers on most systems.
-    - PyTorch tensors have a default datatype of `float32`
-2. Numpy arrays cannot exist on a GPU, only a CPU, whereas PyTorch tensors can exist on both.
-
-To convert NumPy arrays to PyTorch tensors, use the followings code and tools.
-
-- Data in NumPy, want in PyTorch tensor -> `torch.from_numpy(ndarray)`
-- PyTorch tensor, want in NumPy array -> `torch.Tensor.numpy()`
-- For type coersion, `torch.from_numpy(ndarray).type(torch.float32)` 
-- To convert PyTorch data on GPU to Numpy, use `Tensor.cpu()`
 
 ## Creating a machine learning model in PyTorch
 

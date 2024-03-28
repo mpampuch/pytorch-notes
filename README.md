@@ -121,19 +121,19 @@ The `forward` method in a PyTorch `nn.Module` subclass defines the computation p
 
 `optimizer.zero_grad()` is used to clear the gradients of all optimized tensors. Here's why it's necessary:
 
-**Accumulation of Gradients**: During the backward pass, gradients are computed and accumulated in the .grad attribute of each parameter tensor. If you don't zero the gradients before the next backward pass, the new gradients will be added to the existing ones, leading to incorrect gradient values.
+**Accumulation of Gradients**: During the backward pass, gradients are computed and accumulated in the `.grad` attribute of each parameter tensor. If you don't zero the gradients before the next backward pass, the new gradients will be added to the existing ones, leading to incorrect gradient values.
 
 **Preventing Gradient Accumulation**: In many cases, you want to compute gradients for each batch of data separately. If you accumulate gradients across multiple batches, it effectively results in a larger batch size, which can lead to less stable training and divergence of the optimization process.
 
 **Efficiency**: Zeroing the gradients also helps in memory efficiency. By clearing the gradients after each optimization step, you free up memory that would otherwise be occupied by the gradients of previous batches.
 
-In summary, optimizer.zero_grad() ensures that you start each optimization step with fresh gradients, avoiding gradient accumulation issues and improving training stability and efficiency. It's an essential step in the training loop when using gradient-based optimization algorithms like stochastic gradient descent (SGD), Adam, etc.
+`optimizer.zero_grad()` ensures that you start each optimization step with fresh gradients, avoiding gradient accumulation issues and improving training stability and efficiency. It's an essential step in the training loop when using gradient-based optimization algorithms like stochastic gradient descent (SGD), Adam, etc.
 
 ### `optimizer.step()`
 
 When you call the `.step()` function on an optimizer in PyTorch, it performs a single optimization step. Here's what happens during this step:
 
-**Gradient Computation**: If you've previously performed a backward pass (by calling the backward() function on the loss tensor), gradients have been computed for all parameters that have requires_grad=True. These gradients are stored in the .grad attribute of each parameter tensor.
+**Gradient Computation**: If you've previously performed a backward pass (by calling the `backward()` function on the loss tensor), gradients have been computed for all parameters that have `requires_grad=True`. These gradients are stored in the `.grad` attribute of each parameter tensor.
 
 **Parameter Update**: The optimizer uses these computed gradients to update the parameters. The update rule depends on the optimization algorithm being used. For example, in stochastic gradient descent (SGD), the update rule for a parameter 
 
@@ -144,7 +144,7 @@ $$\theta_{\text {new }}=\theta_{\text {old }}- \text {learning-rate} \times \tex
 
 The learning rate controls the step size of the update. Other optimization algorithms like Adam, Adagrad, etc., have more sophisticated update rules.
 
-**Gradient Clearing**: After the parameter update, the gradients are cleared for the next iteration. This prevents gradients from accumulating across multiple backward() calls.
+**Gradient Clearing**: After the parameter update, the gradients are cleared for the next iteration. This prevents gradients from accumulating across multiple `backward()` calls.
 
 Calling `optimizer.step()` thus iterates through all the parameters registered with the optimizer, updates them according to their respective gradients and the optimization algorithm's update rule, and clears the gradients for the next iteration. This process is central to the training loop of a neural network, where parameters are iteratively updated to minimize the loss function and improve the model's performance.
 
@@ -337,6 +337,27 @@ In that same vain as above, minibatches should also be set to multiples of 8, bu
 |[Confusion matrix](https://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/)|Compares the predicted values with the true values in a tabular way, if 100% correct, all values in the matrix will be top left to bottom right (diagnol line).|[`torchmetrics.ConfusionMatrix`](https://torchmetrics.readthedocs.io/en/stable/classification/confusion_matrix.html#confusionmatrix) or [`sklearn.metrics.plot_confusion_matrix()`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.ConfusionMatrixDisplay.html#sklearn.metrics.ConfusionMatrixDisplay.from_predictions)|
 |Classification report|Collection of some of the main classification metrics such as precision, recall and f1-score.|[`sklearn.metrics.classification_report()`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html)|
 
+### Precision vs Recall
+
+Precision and recall are two important metrics used to evaluate the performance of classification models, especially in situations where there is class imbalance. They are often used together to provide a more comprehensive understanding of a model's performance.
+
+![Precision and Recall](precision-and-recall.png)
+
+- **Precision**:
+  - Precision measures the accuracy of positive predictions made by the model.
+  - It is calculated as the ratio of true positive predictions to the total number of positive predictions made by the model, regardless of whether they are correct or incorrect.
+  - Precision focuses on minimizing false positives, meaning it measures how many of the predicted positive instances are actually true positives.
+
+- **Recall**:
+  - Recall measures the ability of the model to capture all the positive instances in the dataset.
+  - It is calculated as the ratio of true positive predictions to the total number of actual positive instances in the dataset.
+  - Recall focuses on minimizing false negatives, meaning it measures how many of the true positive instances are captured by the model.
+- Trade-off:
+  - Precision and recall often have an inverse relationship. Improving precision typically reduces recall and vice versa.
+  - The choice between precision and recall depends on the specific requirements of the problem. For example, in applications where false positives are costly (e.g., medical diagnosis), precision may be prioritized. In contrast, in applications where false negatives are more critical (e.g., detecting fraud), recall may be prioritized.
+  - **F1 Score**, the harmonic mean of precision and recall, is commonly used to balance the trade-off between the two metrics.
+
+Precision and recall provide complementary insights into the performance of a classification model, helping to assess its ability to make correct positive predictions and capture all positive instances in the dataset.
 
 ## `torch.utils.data.DataSet` and `torch.utils.data.DataLoader`
 

@@ -514,7 +514,7 @@ However, sometimes you may want to work with tensors outside of the computationa
 
 When you call `torch.Tensor.detach()` on a tensor, it creates a new tensor that shares the same data but is detached from the computation graph. This means that gradients will not be calculated with respect to this tensor, and it will not be part of the computation graph for future operations.
 
-This tensor can then be converted to a NumPy array using `torch.Tensor.numpy()`
+This tensor can then be converted to a NumPy array using `torch.Tensor.numpy()`. You can also call `torch.Tensor.cpu()` beforehand to be safe because NumPy data can only exist on a CPU.
 
 For example:
 
@@ -526,5 +526,5 @@ import matplotlib.pyplot as plt
 EXAMPLE_IMAGE_TENSOR = torch.randn(64, 64, 3)
 
 # Plot the image that the underlying tensor represents
-plt.imshow(EXAMPLE_IMAGE_TENSOR.detach().numpy()) # Notice the detaching and conversion
+plt.imshow(EXAMPLE_IMAGE_TENSOR.detach().cpu().numpy()) # Notice the detaching and conversion
 ```

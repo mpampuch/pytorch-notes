@@ -724,6 +724,7 @@ print(train_data[0])
           0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
           0.0000, 0.0000, 0.0000, 0.0000]]]), 5)
 """
+# ^ The "5" at the end is the label. This is a tuple of a tensor and an integer
 
 print(str(train_data[0].__class__.mro()).replace(",", "\n"))
 """Outputs

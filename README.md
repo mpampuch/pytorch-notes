@@ -209,6 +209,226 @@ Some of them are listed here
 
 ![A PyTorch Workflow with Specific Tools](pytorch-workflow-detailed.png)
 
+## Working with Images in PyTorch
+
+Working with images is a common practice in deep learning. Even if the data you're working with aren't necessarily image data, sometimes converting that data into an image interpretation first can be a useful.
+
+Below is a list of PyTorch computer vision libraries you should be aware of.
+
+|PyTorch module|What does it do?|
+|:----|:----|
+|[`torchvision`](https://pytorch.org/vision/stable/index.html)|Contains datasets, model architectures and image transformations often used for computer vision problems.|
+|[`torchvision.datasets`](https://pytorch.org/vision/stable/datasets.html)|Here you'll find many example computer vision datasets for a range of problems from image classification, object detection, image captioning, video classification and more. It also contains [a series of base classes for making custom datasets](https://pytorch.org/vision/stable/datasets.html#base-classes-for-custom-datasets).|
+|[`torchvision.models`](https://pytorch.org/vision/stable/models.html)|This module contains well-performing and commonly used computer vision model architectures implemented in PyTorch, you can use these with your own problems.|
+|[`torchvision.transforms`](https://pytorch.org/vision/stable/transforms.html)|Often images need to be transformed (turned into numbers/processed/augmented) before being used with a model, common image transformations are found here.|
+|[`torch.utils.data.Dataset`](https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset)|Base dataset class for PyTorch.|
+|[`torch.utils.data.DataLoader`](https://pytorch.org/docs/stable/data.html#module-torch.utils.data)|Creates a Python iterable over a dataset (created with `torch.utils.data.Dataset`).|
+
+Preset datasets can be grabbed from `torchvision.datasets`. [See here for more information](https://www.learnpytorch.io/03_pytorch_computer_vision/#1-getting-a-dataset).
+
+## Image dimensions in PyTorch
+
+Images typically have 3 dimensions: Height (`H`), Width(`W`), and Colour Channels (`C`).
+
+There's debate on whether images should be represented as `CHW` (color channels first) or `HWC` (color channels last).
+
+**Note**: You'll also see `NCHW` and `NHWC` formats where `N` stands for number of images. For example if you have a `batch_size=32`, your tensor shape may be `[32, 1, 28, 28]`. 
+
+PyTorch generally accepts `NCHW` (channels first) as the default for many operators.
+
+However, PyTorch also explains that `NHWC` (channels last) performs better and is considered [best practice](https://pytorch.org/blog/tensor-memory-format-matters/#pytorch-best-practice).
+
+The dimensions of a tensor can be easily rearranged with the `torch.permute()` function
+
+Example:
+
+```python
+import torch
+
+# Create a tensor of shape [32, 1, 28, 28]
+tensor = torch.randn(32, 1, 28, 28)
+
+# Use the permute function to reorder the dimensions
+permuted_tensor = tensor.permute(0, 2, 3, 1)
+
+# Print the shape of the permuted tensor
+print(permuted_tensor.shape)
+# Outputs: torch.Size([32, 28, 28, 1])
+```
+
+## Using Tensors with Matplotlib
+
+Matplotlib is a Python library used for generating plots, charts, histograms, and other graphical representations of data. It's very useful for working with images in order to visualize the tensor representations of images to make sure the images are correct (using the `matplotlib.pyplot.imshow` method)
+
+In order to pass a tensor into Matplotlib it's important to know two things.
+
+- Matplotlib takes it's input as NumPy arrays
+- NumPy arrays cannot be generated from tensors that require gradient computation
+
+To this end, the method `torch.Tensor.detach()` can help.
+
+In PyTorch, `torch.Tensor.detach()` is a method used to detach a tensor from the computation graph. When you perform operations on tensors in PyTorch, the computational graph is built to keep track of the operations applied to tensors, which is essential for automatic differentiation during backpropagation.
+
+However, sometimes you may want to work with tensors outside of the computational graph, such as when you want to stop gradients from being calculated with respect to a particular tensor. This is where `torch.Tensor.detach()` comes in handy.
+
+When you call `torch.Tensor.detach()` on a tensor, it creates a new tensor that shares the same data but is detached from the computation graph. This means that gradients will not be calculated with respect to this tensor, and it will not be part of the computation graph for future operations.
+
+This tensor can then be converted to a NumPy array using `torch.Tensor.numpy()`. You can also call `torch.Tensor.cpu()` beforehand to be safe because NumPy data can only exist on a CPU.
+
+For example:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+
+# Generate a random 64 x 64 image with 3 colour channels
+EXAMPLE_IMAGE_TENSOR = torch.randn(64, 64, 3)
+
+# Plot the image that the underlying tensor represents
+plt.imshow(EXAMPLE_IMAGE_TENSOR.detach().cpu().numpy()) # Notice the detaching and conversion
+```
+
+## Inspecting datasets
+
+Datasets from the `datasets` library come a a dataset object. Even if you convert them to tensors using 
+the `ToTensor` transform, you still won't be able to operate on the tensor unless you know how to isolate the tensor. 
+
+
+
+```python
+# Import PyTorch
+import torch
+from torch import nn
+from torch.utils.data import Dataset, DataLoader
+
+# Import torchvision
+import torchvision
+from torchvision import datasets
+from torchvision.transforms import ToTensor
+
+# Import MNIST dataset
+# Import training data
+train_data = datasets.MNIST(
+    root = "data", # where to download the data to?
+    train = True, # Get the training data
+    download = True, # Download the data if it doesn't exist on the dist
+    transform = ToTensor(), # Transform the images into tensors. Default is PIL format
+    target_transform = None # You can transform the labels as well
+    )
+
+
+print(train_data)
+"""Outputs
+Dataset MNIST
+    Number of datapoints: 60000
+    Root location: data
+    Split: Train
+    StandardTransform
+Transform: ToTensor()
+"""
+
+print(str(train_data.__class__.mro()).replace(",", "\n"))
+"""Outputs
+[<class 'torchvision.datasets.mnist.MNIST'>
+ <class 'torchvision.datasets.vision.VisionDataset'>
+ <class 'torch.utils.data.dataset.Dataset'>
+ <class 'typing.Generic'>
+ <class 'object'>]
+"""
+
+print(train_data[0])
+"""Outputs
+(tensor([[[0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+          ... truncated output to save space ...
+          0.0000, 0.0000, 0.0000, 0.0000]]]), 5)
+"""
+# ^ The "5" at the end is the label. This is a tuple of a tensor and an integer
+
+print(str(train_data[0].__class__.mro()).replace(",", "\n"))
+"""Outputs
+[ <class 'tuple'>
+ <class 'object'>]
+"""
+
+print(train_data[0][0])
+"""Outputs
+tensor([[[0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+          ... truncated output to save space ...
+          0.0000, 0.0000, 0.0000, 0.0000]]])
+"""
+
+print(str(train_data[0][0].__class__.mro()).replace(",", "\n"))
+"""Outputs
+[<class 'torch.Tensor'>
+ <class 'torch._C.TensorBase'>
+ <class 'object'>]
+"""
+
+# ^ Now a tensor is isolated from the dataset and ready to be inspected
+```
+
+### DataLoaders
+
+Once you a dataset ready to go, the next step is to prepare it with a `torch.utils.data.DataLoader` or `DataLoader` for short.
+
+The `DataLoader` helps load data into a model for training and for inference. It turns a large Dataset into a Python iterable of smaller chunks. These smaller chunks are called **batches** or **mini-batches** and can be set by the `batch_size` parameter. It's good to do this because:
+
+1. It's more computationally efficient. In an ideal world you could do the forward pass and backward pass across all of your data at once. But once you start using really large datasets, unless you've got infinite computing power, it's easier to break them up into batches.
+
+2. It also gives your model more opportunities to improve. With mini-batches (small portions of the data), gradient descent is performed more often per epoch (once per mini-batch rather than once per epoch).
+
+32 is often a good is a good place to start in terms of batch size for a fair amount of problems. But since this is a value you can set (a hyperparameter) you can try all different kinds of values, though generally powers of 2 are used most often (e.g. 32, 64, 128, 256, 512).
+
+DataLoaders can be created as follows:
+
+```python
+from torch.utils.data import DataLoader
+
+# Setup the batch size hyperparameter
+BATCH_SIZE = 32
+
+# Turn datasets into iterables (batches)
+train_dataloader = DataLoader(train_data, # dataset to turn into iterable
+    batch_size=BATCH_SIZE, # how many samples per batch? 
+    shuffle=True # shuffle data every epoch?
+)
+
+test_dataloader = DataLoader(test_data,
+    batch_size=BATCH_SIZE,
+    shuffle=False # don't necessarily have to shuffle the testing data
+)
+
+# Let's check out what we've created
+print(f"Dataloaders: {train_dataloader, test_dataloader}") 
+print(f"Length of train dataloader: {len(train_dataloader)} batches of {BATCH_SIZE}")
+print(f"Length of test dataloader: {len(test_dataloader)} batches of {BATCH_SIZE}")
+
+"""Outputs
+Dataloaders: (<torch.utils.data.dataloader.DataLoader object at 0x7fc991463cd0>, <torch.utils.data.dataloader.DataLoader object at 0x7fc991475120>)
+Length of train dataloader: 1875 batches of 32
+Length of test dataloader: 313 batches of 32
+"""
+```
+
+### Getting the data out of DataLoaders
+
+You can use  `next(iter(DATALOADER_OBJECT))`, to get your data out of dataloaders
+
+Example:
+
+```python
+train_features_batch, train_labels_batch = next(iter(train_dataloader))
+```
+
+1. `train_dataloader` is an iterable object (likely a `DataLoader` instance) containing batches of training data.
+2. `iter(train_dataloader)` creates an iterator from `train_dataloader`, allowing us to iterate over its batches.
+3. `next(...)` retrieves the next batch from the iterator.
+4. `train_features_batch, train_labels_batch` unpacks the features (input data) and labels from the retrieved batch.
+
+Overall, this line of code fetches the next batch of training data and separates it into features and labels, assigning them to the variables `train_features_batch` and `train_labels_batch`, respectively. This is often used in training loops to iterate over batches of data for model training.
+
+
+
 ## Organising PyTorch projects
 
 Once you have a machine learning project that you want to save, it may be a good idea to organize it into modules. 
@@ -497,162 +717,5 @@ The outputs of the `SummaryWriter()` are saved in TensorBoard format, which make
 
 with `.unsqueeze()`
 
-## Image dimensions in PyTorch
-
-Images typically have 3 dimensions: Height (`H`), Width(`W`), and Colour Channels (`C`).
-
-There's debate on whether images should be represented as `CHW` (color channels first) or `HWC` (color channels last).
-
-**Note**: You'll also see `NCHW` and `NHWC` formats where `N` stands for number of images. For example if you have a `batch_size=32`, your tensor shape may be `[32, 1, 28, 28]`. 
-
-PyTorch generally accepts `NCHW` (channels first) as the default for many operators.
-
-However, PyTorch also explains that `NHWC` (channels last) performs better and is considered [best practice](https://pytorch.org/blog/tensor-memory-format-matters/#pytorch-best-practice).
-
-The dimensions of a tensor can be easily rearranged with the `torch.permute()` function
-
-Example:
-
-```python
-import torch
-
-# Create a tensor of shape [32, 1, 28, 28]
-tensor = torch.randn(32, 1, 28, 28)
-
-# Use the permute function to reorder the dimensions
-permuted_tensor = tensor.permute(0, 2, 3, 1)
-
-# Print the shape of the permuted tensor
-print(permuted_tensor.shape)
-# Outputs: torch.Size([32, 28, 28, 1])
-```
 
 ## `requires_grad()`
-
-## Using Tensors with Matplotlib
-
-Matplotlib is a Python library used for generating plots, charts, histograms, and other graphical representations of data.
-
-In order to pass a tensor into Matplotlib it's generally good to do 2 things beforehand.
-
-- Matplotlib takes it's input as NumPy arrays
-- NumPy arrays cannot be generated from tensors that require gradient computation
-
-To this end, the method `torch.Tensor.detach()` can help.
-
-In PyTorch, `torch.Tensor.detach()` is a method used to detach a tensor from the computation graph. When you perform operations on tensors in PyTorch, the computational graph is built to keep track of the operations applied to tensors, which is essential for automatic differentiation during backpropagation.
-
-However, sometimes you may want to work with tensors outside of the computational graph, such as when you want to stop gradients from being calculated with respect to a particular tensor. This is where `torch.Tensor.detach()` comes in handy.
-
-When you call `torch.Tensor.detach()` on a tensor, it creates a new tensor that shares the same data but is detached from the computation graph. This means that gradients will not be calculated with respect to this tensor, and it will not be part of the computation graph for future operations.
-
-This tensor can then be converted to a NumPy array using `torch.Tensor.numpy()`. You can also call `torch.Tensor.cpu()` beforehand to be safe because NumPy data can only exist on a CPU.
-
-For example:
-
-```python
-import torch
-import matplotlib.pyplot as plt
-
-# Generate a random 64 x 64 image with 3 colour channels
-EXAMPLE_IMAGE_TENSOR = torch.randn(64, 64, 3)
-
-# Plot the image that the underlying tensor represents
-plt.imshow(EXAMPLE_IMAGE_TENSOR.detach().cpu().numpy()) # Notice the detaching and conversion
-```
-
-## Inspecting datasets
-
-Datasets from the `datasets` library come a a dataset object. Even if you convert them to tensors using 
-the `ToTensor` transform, you still won't be able to operate on the tensor unless you know how to isolate the tensor. 
-
-
-
-```python
-# Import PyTorch
-import torch
-from torch import nn
-from torch.utils.data import Dataset, DataLoader
-
-# Import torchvision
-import torchvision
-from torchvision import datasets
-from torchvision.transforms import ToTensor
-
-# Import MNIST dataset
-# Import training data
-train_data = datasets.MNIST(
-    root = "data", # where to download the data to?
-    train = True, # Get the training data
-    download = True, # Download the data if it doesn't exist on the dist
-    transform = ToTensor(), # Transform the images into tensors. Default is PIL format
-    target_transform = None # You can transform the labels as well
-    )
-
-
-print(train_data)
-"""Outputs
-Dataset MNIST
-    Number of datapoints: 60000
-    Root location: data
-    Split: Train
-    StandardTransform
-Transform: ToTensor()
-"""
-
-print(str(train_data.__class__.mro()).replace(",", "\n"))
-"""Outputs
-[<class 'torchvision.datasets.mnist.MNIST'>
- <class 'torchvision.datasets.vision.VisionDataset'>
- <class 'torch.utils.data.dataset.Dataset'>
- <class 'typing.Generic'>
- <class 'object'>]
-"""
-
-print(train_data[0])
-"""Outputs
-(tensor([[[0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
-          ... truncated output to save space ...
-          0.0000, 0.0000, 0.0000, 0.0000]]]), 5)
-"""
-# ^ The "5" at the end is the label. This is a tuple of a tensor and an integer
-
-print(str(train_data[0].__class__.mro()).replace(",", "\n"))
-"""Outputs
-[ <class 'tuple'>
- <class 'object'>]
-"""
-
-print(train_data[0][0])
-"""Outputs
-tensor([[[0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
-          ... truncated output to save space ...
-          0.0000, 0.0000, 0.0000, 0.0000]]])
-"""
-
-print(str(train_data[0][0].__class__.mro()).replace(",", "\n"))
-"""Outputs
-[<class 'torch.Tensor'>
- <class 'torch._C.TensorBase'>
- <class 'object'>]
-"""
-
-# ^ Now a tensor is isolated from the dataset and ready to be inspected
-```
-
-### Getting the data out of data loaders
-
-You can use  `next(iter(DATALOADER_OBJECT))`, to get your data out of dataloaders
-
-Example:
-
-```python
-train_features_batch, train_labels_batch = next(iter(train_dataloader))
-```
-
-1. `train_dataloader` is an iterable object (likely a `DataLoader` instance) containing batches of training data.
-2. `iter(train_dataloader)` creates an iterator from `train_dataloader`, allowing us to iterate over its batches.
-3. `next(...)` retrieves the next batch from the iterator.
-4. `train_features_batch, train_labels_batch` unpacks the features (input data) and labels from the retrieved batch.
-
-Overall, this line of code fetches the next batch of training data and separates it into features and labels, assigning them to the variables `train_features_batch` and `train_labels_batch`, respectively. This is often used in training loops to iterate over batches of data for model training.

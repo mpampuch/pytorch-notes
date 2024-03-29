@@ -497,7 +497,34 @@ with `.unsqueeze()`
 
 ## `requires_grad()`
 
-## `.detach()`
+## Using Tensors with Matplotlib
 
-## Precision and Recall
+Matplotlib is a Python library used for generating plots, charts, histograms, and other graphical representations of data.
 
+In order to pass a tensor into Matplotlib it's generally good to do 2 things beforehand.
+
+- Matplotlib does not like to take as input tensors with gradients tracked on them
+- It prefers it's inputs as NumPy arrays.
+
+To this end, the method `torch.Tensor.detach()` can help.
+
+In PyTorch, `torch.Tensor.detach()` is a method used to detach a tensor from the computation graph. When you perform operations on tensors in PyTorch, the computational graph is built to keep track of the operations applied to tensors, which is essential for automatic differentiation during backpropagation.
+
+However, sometimes you may want to work with tensors outside of the computational graph, such as when you want to stop gradients from being calculated with respect to a particular tensor. This is where `torch.Tensor.detach()` comes in handy.
+
+When you call `torch.Tensor.detach()` on a tensor, it creates a new tensor that shares the same data but is detached from the computation graph. This means that gradients will not be calculated with respect to this tensor, and it will not be part of the computation graph for future operations.
+
+This tensor can then be converted to a NumPy array using `torch.Tensor.numpy()`
+
+For example:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+
+# Generate a random 64 x 64 image with 3 colour channels
+EXAMPLE_IMAGE_TENSOR = torch.randn(64, 64, 3)
+
+# Plot the image that the underlying tensor represents
+plt.imshow(EXAMPLE_IMAGE_TENSOR.detach().numpy()) # Notice the detaching and conversion
+```

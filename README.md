@@ -63,7 +63,9 @@ To convert NumPy arrays to PyTorch tensors, use the followings code and tools.
 - Data in NumPy, want in PyTorch tensor -> `torch.from_numpy(ndarray)`
 - PyTorch tensor, want in NumPy array -> `torch.Tensor.numpy()`
 - For type coersion, `torch.from_numpy(ndarray).type(torch.float32)` 
-- To convert PyTorch data on GPU to Numpy, use `Tensor.cpu()`
+- To convert PyTorch data on GPU to Numpy, use `torch.Tensor.cpu()`
+
+**Note**: NumPy arrays cannot be generated from tensors that require gradient computation. Use `torch.Tensor.detach()` to remove tensors from computatation graphs.
 
 ## Device agnostic code
 
@@ -503,8 +505,8 @@ Matplotlib is a Python library used for generating plots, charts, histograms, an
 
 In order to pass a tensor into Matplotlib it's generally good to do 2 things beforehand.
 
-- Matplotlib does not like to take as input tensors with gradients tracked on them
-- It prefers it's inputs as NumPy arrays.
+- Matplotlib takes it's input as NumPy arrays
+- NumPy arrays cannot be generated from tensors that require gradient computation
 
 To this end, the method `torch.Tensor.detach()` can help.
 

@@ -363,7 +363,7 @@ Multiples of 8 are often recommended for machine learning, particularly in neura
 
 Mini-batches are subsets of a dataset used during the training process of machine learning models, particularly in deep learning. Instead of feeding the entire dataset into the model at once, mini-batch training involves dividing the dataset into smaller batches and processing each batch sequentially during training. 
 
-In that same vain as above, minibatches should also be set to multiples of 8, but also it is often recommended to use minibatches of around 32, as this strikes a balance between utilizing GPU memory efficiently and allowing for a reasonable training speed.
+In that same vain as above, minibatches should also be set to multiples of 8, but also it is often recommended to use minibatches of [around 32](https://arxiv.org/abs/1804.07612), especially when first starting building your model, as this strikes a balance between utilizing GPU memory efficiently and allowing for a reasonable training speed.
 
 ## SciKitLearn train/test split
 

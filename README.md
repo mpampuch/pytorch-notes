@@ -639,3 +639,20 @@ print(str(train_data[0][0].__class__.mro()).replace(",", "\n"))
 
 # ^ Now a tensor is isolated from the dataset and ready to be inspected
 ```
+
+### Getting the data out of data loaders
+
+You can use  `next(iter(DATALOADER_OBJECT))`, to get your data out of dataloaders
+
+Example:
+
+```python
+train_features_batch, train_labels_batch = next(iter(train_dataloader))
+```
+
+1. `train_dataloader` is an iterable object (likely a `DataLoader` instance) containing batches of training data.
+2. `iter(train_dataloader)` creates an iterator from `train_dataloader`, allowing us to iterate over its batches.
+3. `next(...)` retrieves the next batch from the iterator.
+4. `train_features_batch, train_labels_batch` unpacks the features (input data) and labels from the retrieved batch.
+
+Overall, this line of code fetches the next batch of training data and separates it into features and labels, assigning them to the variables `train_features_batch` and `train_labels_batch`, respectively. This is often used in training loops to iterate over batches of data for model training.

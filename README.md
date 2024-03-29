@@ -497,6 +497,36 @@ The outputs of the `SummaryWriter()` are saved in TensorBoard format, which make
 
 with `.unsqueeze()`
 
+## Image dimensions in PyTorch
+
+Images typically have 3 dimensions: Height (`H`), Width(`W`), and Colour Channels (`C`).
+
+There's debate on whether images should be represented as `CHW` (color channels first) or `HWC` (color channels last).
+
+**Note**: You'll also see `NCHW` and `NHWC` formats where `N` stands for number of images. For example if you have a `batch_size=32`, your tensor shape may be `[32, 1, 28, 28]`. 
+
+PyTorch generally accepts `NCHW` (channels first) as the default for many operators.
+
+However, PyTorch also explains that `NHWC` (channels last) performs better and is considered [best practice](https://pytorch.org/blog/tensor-memory-format-matters/#pytorch-best-practice).
+
+The dimensions of a tensor can be easily rearranged with the `torch.permute()` function
+
+Example:
+
+```python
+import torch
+
+# Create a tensor of shape [32, 1, 28, 28]
+tensor = torch.randn(32, 1, 28, 28)
+
+# Use the permute function to reorder the dimensions
+permuted_tensor = tensor.permute(0, 2, 3, 1)
+
+# Print the shape of the permuted tensor
+print(permuted_tensor.shape)
+# Outputs: torch.Size([32, 28, 28, 1])
+```
+
 ## `requires_grad()`
 
 ## Using Tensors with Matplotlib

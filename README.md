@@ -159,6 +159,250 @@ By organizing your layers or modules into blocks and stacking them using `torch.
 
 `torch.nn.Sequential` provides flexibility in designing complex architectures while keeping the code concise and readable. It allows you to easily experiment with different arrangements of blocks without needing to explicitly define each layer's input and output dimensions.
 
+## Convolutional Neural Networks
+
+Convolutional Neural Networks (CNNs) are a class of deep neural networks primarily used for analyzing visual imagery. They are designed to automatically and adaptively learn spatial hierarchies of features from input images. 
+
+The key components of CNNs include:
+
+1. **Convolutional Layers**: These layers apply convolution operations to the input image using learnable filters (also called kernels) to extract various features from the input image. Convolutional layers preserve the spatial relationship between pixels.
+
+2. **Activation Functions**: Non-linear activation functions like ReLU (Rectified Linear Unit) are applied to the output of convolutional layers to introduce non-linearity and enable the network to learn complex patterns.
+
+3. **Pooling** (or Subsampling) **Layers**: Pooling layers downsample the feature maps obtained from convolutional layers, reducing their spatial dimensions (width and height). Max pooling and average pooling are commonly used methods for this purpose.
+
+4. **Fully Connected Layers** (or Dense Layers): These layers take the high-level features extracted by convolutional layers and learn to classify the input image into various classes. They perform classification based on the features extracted by previous layers.
+
+5. **Flattening**: Before passing the output of convolutional layers to fully connected layers, the feature maps are typically flattened into a vector.
+
+
+CNNs are widely used in computer vision tasks due to their ability to automatically learn hierarchical representations of features directly from raw pixel data, without the need for handcrafted feature extraction.
+
+An example of a CNN built in PyTorch is as follows:
+
+(This model is known as TinyVGG from the [CNN Explainer](https://poloclub.github.io/cnn-explainer/) website)
+
+```python
+class MNISTModelV2(nn.Module):
+
+
+  def __init__(self, input_shape: int, hidden_units: int, output_shape: int):
+    super().__init__()
+
+    self.block_1 = nn.Sequential(
+        nn.Conv2d(
+            in_channels = input_shape,
+            out_channels = hidden_units,
+            kernel_size = 3, # How big is the square that is going over the image
+            stride = 1, # default
+            padding = 1 # options = "valid" (no padding), "same" (output has same shape as input), or int for specific number
+        ),
+        nn.ReLU()
+    )
+    self.block_2 = nn.Sequential(
+        nn.Conv2d(
+            in_channels = hidden_units,
+            out_channels = hidden_units,
+            kernel_size = 3,
+            stride = 1,
+            padding = 1
+        ),
+        nn.ReLU(),
+        nn.MaxPool2d(
+            kernel_size = 2,
+            stride = 2 # default stride is the same as kernal size
+        )
+    )
+    self.block_3 =  nn.Sequential(
+        nn.Conv2d(
+            in_channels = hidden_units,
+            out_channels = hidden_units,
+            kernel_size = 3, # How big is the square that is going over the image
+            stride = 1, # default
+            padding = 1 # options = "valid" (no padding), "same" (output has same shape as input), or int for specific number
+        ),
+        nn.ReLU()
+    )
+    self.block_4 = nn.Sequential(
+        nn.Conv2d(
+            in_channels = hidden_units,
+            out_channels = hidden_units,
+            kernel_size = 3,
+            stride = 1,
+            padding = 1
+        ),
+        nn.ReLU(),
+        nn.MaxPool2d(
+            kernel_size = 2,
+            stride = 2 # default stride is the same as kernal size
+        )
+    )
+    self.classifier = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(in_features = hidden_units,
+                  out_features = output_shape)
+    )
+
+  def forward(self, x: torch.Tensor):
+    # print(x.shape)
+    x = self.block_1(x)
+    # print(x.shape)
+    x = self.block_2(x)
+    # print(x.shape)
+    x = self.block_3(x)
+    # print(x.shape)
+    x = self.block_4(x)
+    # print(x.shape)
+    x = self.classifier(x)
+    # print(x.shape)
+    return x
+
+# Instantiate the model
+model_2 = MNISTModelV2(input_shape = 1, 
+                       hidden_units = 10, 
+                       output_shape = len(train_data.classes))
+```
+
+### How to calculate the right amount of layers to add to your CNN
+
+One of the most common issues in deep learning is shape errors, where the input data and output data dimensions are incompatible or tensor dimensions are incompatible for matrix/tensor multiplications. 
+
+While it is possible to determine the input and output shapes mathematically in advance to building the model, an easier way is to just pass the data through the model one step at a time and print out the changes to their dimensions.
+
+The steps to do this are.
+
+1. Build a draft of your model with the inputs and output channels you think you need for each layer
+2. Define your forward pass function.
+3. Inside your forward pass function, add a `print` statement printing out the shape of each tensor before, during, and after it's passed through your model
+4. Instantiate your model
+5. Perform a forward pass with the data and check the outputs to see how the dimensions of the data are altered at every layer
+6. If you encounter a shape incompatibility issue, modify the model and try again.
+
+Example:
+
+Here is the end portion of the code from the model above
+
+```python
+  # Define the forward pass 
+  def forward(self, x: torch.Tensor):
+    print(x.shape)
+    x = self.block_1(x)
+    print(x.shape)
+    x = self.block_2(x)
+    print(x.shape)
+    x = self.block_3(x)
+    print(x.shape)
+    x = self.block_4(x)
+    print(x.shape)
+    x = self.classifier(x)
+    print(x.shape)
+    return x
+
+# Instantiate the model
+model_2 = MNISTModelV2(input_shape = 1, 
+                       hidden_units = 10, 
+                       output_shape = len(train_data.classes))
+
+# Pass single image thorugh
+single_image = train_features_batch[0].unsqueeze(0)
+
+# Perform a forward pass
+output = model_2(single_image)
+```
+
+This outputs:
+
+```
+torch.Size([1, 1, 28, 28])
+torch.Size([1, 10, 28, 28])
+torch.Size([1, 10, 14, 14])
+torch.Size([1, 10, 14, 14])
+torch.Size([1, 10, 7, 7])
+---------------------------------------------------------------------------
+RuntimeError                              Traceback (most recent call last)
+<ipython-input-60-07dc6f7b23e2> in <cell line: 82>()
+     80 single_image = train_features_batch[0].unsqueeze(0)
+     81 
+---> 82 output = model_2(single_image)
+     83 
+     84 
+
+8 frames
+/usr/local/lib/python3.10/dist-packages/torch/nn/modules/linear.py in forward(self, input)
+    114 
+    115     def forward(self, input: Tensor) -> Tensor:
+--> 116         return F.linear(input, self.weight, self.bias)
+    117 
+    118     def extra_repr(self) -> str:
+
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (1x490 and 10x10)
+```
+
+This means that the model as it currently exists enounters a shape error when passing the data from the output of the fourth block to the input of the classifier block. 
+
+Currently the classifier block looks like this
+
+```python
+    self.classifier = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(in_features = hidden_units, 
+                  out_features = output_shape) 
+    )
+```
+
+Where `10` was passed as the number of hidden units to be used as the input and the length of our data classes (in this case `10`) was passed as the number of units to be used as the output.
+
+The error mentioned that there was a shape error trying to multiply `mat1` and `mat2` ($1\times490$ and $10\times10$, respectfully).
+
+The $10\times10$ matrix hints to us that this matrix may be referring to the $\text{input features}\times \text{output features}$ of our classifier block.
+
+To verify this, you can multiply the input features by a certain number to see if that changes the shape of one of the matrix dimensions.
+
+```python
+    self.classifier = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(in_features = hidden_units * 2, # Try multiplying input features * 2 
+                  out_features = output_shape) 
+    )
+```
+
+Now the error will be changed to 
+
+```
+... truncated output for space ...
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (1x490 and 20x10)
+```
+
+Since the $10\times10$ matrix changed to a $20\times10$ matrix when we multiplied the input units by 2, this dimension is referring to input features of the classifier block for sure.
+
+So to fix our error, it is important to remember that the first matrix must have the same number of columns as the second matrix has rows. In other words, the **inner dimensions** must match.
+
+To fix the matrix multiplication issue with the $1\times490$ and $10\times10$ matrices, we can multiply the input features of the classifier block by 49, or 7 * 7 (which corresponds to the height and width channels of the convoluted images outputted by the fourth block)
+
+Example:
+
+```python
+    self.classifier = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(in_features = hidden_units * 7 * 7, # Multiply the input features to fix the shape mismatch 
+                  out_features = output_shape) 
+    )
+```
+
+Now when we perform the forward pass with the same data, we get the following output.
+
+```
+torch.Size([1, 1, 28, 28])
+torch.Size([1, 10, 28, 28])
+torch.Size([1, 10, 14, 14])
+torch.Size([1, 10, 14, 14])
+torch.Size([1, 10, 7, 7])
+torch.Size([1, 10])
+```
+
+Now our data flows through the model with no errors and outputs a tensor with a size of `[1, 10]`. That makes sense since we performed a forward pass on 1 image that could be classified as any one of 10 classes.
+
+
 ## Loss functions
 - BCEWithLogitsLoss() # Binary classification
     - Combines sigmoid activation function with BCELoss. Better than BCELoss because more numerically stable

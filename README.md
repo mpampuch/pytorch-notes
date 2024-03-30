@@ -149,10 +149,15 @@ By calling `super().__init__()`, you ensure that the subclass inherits all the a
 
 The `forward` method in a PyTorch `nn.Module` subclass defines the computation performed when the module is called with input data. This method outlines how input data flows through the network's layers to produce an output (defines the forward computation of the model). It ***must*** be overwritten for any class that inherits from `nn.Module` in order for the model to work (otherwise the model doesn't know how to pass the data through the layers).
 
-## `nn.Module` and the `forward` method
+### Creating Blocks within the model using `nn.Sequential()`
 
+In PyTorch, `torch.nn.Sequential` is a container module that allows you to stack multiple layers or modules sequentially. It's commonly used to define a neural network model by specifying the layers or blocks one after another. You can define each block of your neural network as a sequence of layers or modules. These blocks can consist of linear layers, convolutional layers, activation functions, normalization layers, etc.
 
-(IMG_4323.PNG)
+Using `torch.nn.Sequential`, you can then sequentially compose these blocks by passing them as arguments to the `Sequential` constructor. This ensures that the output of one block becomes the input to the next block.
+
+By organizing your layers or modules into blocks and stacking them using `torch.nn.Sequential`, you create a structured architecture for your neural network model.
+
+`torch.nn.Sequential` provides flexibility in designing complex architectures while keeping the code concise and readable. It allows you to easily experiment with different arrangements of blocks without needing to explicitly define each layer's input and output dimensions.
 
 ## Loss functions
 - BCEWithLogitsLoss() # Binary classification

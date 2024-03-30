@@ -361,7 +361,7 @@ To verify this, you can multiply the input features by a certain number to see i
 ```python
     self.classifier = nn.Sequential(
         nn.Flatten(),
-        nn.Linear(in_features = hidden_units * 2, # Try multiplying input features * 2 
+        nn.Linear(in_features = hidden_units * 2, # Try multiplying input features by 2 
                   out_features = output_shape) 
     )
 ```
@@ -384,7 +384,7 @@ Example:
 ```python
     self.classifier = nn.Sequential(
         nn.Flatten(),
-        nn.Linear(in_features = hidden_units * 7 * 7, # Multiply the input features to fix the shape mismatch 
+        nn.Linear(in_features = hidden_units * 7 * 7, # Multiply the input features to by the height and width channel sizes of the previous block's outputs
                   out_features = output_shape) 
     )
 ```

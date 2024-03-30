@@ -402,6 +402,8 @@ torch.Size([1, 10])
 
 Now our data flows through the model with no errors and outputs a tensor with a size of `[1, 10]`. That makes sense since we performed a forward pass on 1 image that could be classified as any one of 10 classes.
 
+Once you've ensured there's no shape issues that can exist in your model you can go ahead and comment out or remove all the `print` statements in the forward function.
+
 
 ## Loss functions
 - BCEWithLogitsLoss() # Binary classification

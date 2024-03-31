@@ -901,6 +901,14 @@ Precision and recall provide complementary insights into the performance of a cl
 
 ## tqdm
 
+The tqdm library provides a progress bar for your code. It can wrap around loops and tell you the progress of your loop.
+
+1. When running in a Jupyter notebook or an IPython terminal, it will use the `tqdm.notebook` submodule, which provides a more interactive progress bar.
+
+2. In a regular Python environment, it will use the `tqdm.std` submodule, which provides a simpler text-based progress bar suitable for console applications.
+
+`from tqdm.auto` automatically detects the execution environment and chooses the appropriate submodule, simplifying the usage of tqdm without the need for manual selection. It allows for a seamless experience when working in different environments.
+
 ```python
 from tqdm.auto import tqdm
 for i in tqdm(range(10000)):

@@ -159,6 +159,38 @@ By organizing your layers or modules into blocks and stacking them using `torch.
 
 `torch.nn.Sequential` provides flexibility in designing complex architectures while keeping the code concise and readable. It allows you to easily experiment with different arrangements of blocks without needing to explicitly define each layer's input and output dimensions.
 
+### Model outputs - Logits
+
+Machine learning models can often times provide the raw outputs as **logits**. In machine learning, logits refer to the vector of raw (non-normalized) predictions that a classification model generates, which is ordinarily then passed to a normalization function. If the model is solving a multi-class classification problem, logits typically become an input to the softmax function. The softmax function then generates a vector of (normalized) probabilities with one value for each possible class.
+
+Example (on MNIST data):
+
+```python
+# Logits -> Prediction probabilities -> Prediction labels
+model_pred_logits = model(X_test[0].unsqueeze(dim=0).clone().detach().to(device)) 
+model_pred_probs = torch.softmax(model_pred_logits, dim=1)
+model_pred_label = torch.argmax(model_pred_probs, dim=1)
+print(f"The logits are:\n{model_pred_logits}\n")
+print(f"The prediction probabilities are:\n{model_pred_probs}\n")
+print(f"The predicted label is:\n{model_pred_label}")
+```
+
+Outputs:
+
+```
+The logits are:
+tensor([[ -9.2531,  -7.6084,  10.3126,  -1.2349,  -5.6690, -12.0427,  -9.8467,
+          -4.8567,  -3.0213, -10.5510]], grad_fn=<AddmmBackward0>)
+
+The prediction probabilities are:
+tensor([[3.1821e-09, 1.6482e-08, 9.9999e-01, 9.6600e-06, 1.1463e-07, 1.9554e-10,
+         1.7577e-09, 2.5826e-07, 1.6187e-06, 8.6907e-10]],
+       grad_fn=<SoftmaxBackward0>)
+
+The predicted label is:
+tensor([2])
+```
+
 ## Convolutional Neural Networks
 
 Convolutional Neural Networks (CNNs) are a class of deep neural networks primarily used for analyzing visual imagery. They are designed to automatically and adaptively learn spatial hierarchies of features from input images. 
@@ -538,6 +570,8 @@ EXAMPLE_IMAGE_TENSOR = torch.randn(64, 64, 3)
 # Plot the image that the underlying tensor represents
 plt.imshow(EXAMPLE_IMAGE_TENSOR.detach().cpu().numpy()) # Notice the detaching and conversion
 ```
+
+**Note**: If the `torch.Tensor.detach()` method is ever not enough to solve this problem, try prefixing it with the `torch.Tensor.clone()` method (e.g. `EXAMPLE_IMAGE_TENSOR.clone().detach().cpu().numpy()`). This should most resolve any error you'd encounter.
 
 ## Inspecting datasets
 

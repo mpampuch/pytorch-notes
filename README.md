@@ -167,7 +167,7 @@ Example (on MNIST data):
 
 ```python
 # Logits -> Prediction probabilities -> Prediction labels
-model_pred_logits = model(X_test[0].unsqueeze(dim=0).clone().detach().to(device)) 
+model_pred_logits = model(test_data[0][0].unsqueeze(dim=0).clone().detach().to(device)) 
 model_pred_probs = torch.softmax(model_pred_logits, dim=1)
 model_pred_label = torch.argmax(model_pred_probs, dim=1)
 print(f"The logits are:\n{model_pred_logits}\n")
@@ -1012,3 +1012,58 @@ with `.unsqueeze()`
 
 
 ## `requires_grad()`
+
+## Confusion matrices
+
+Confusion matrices are a good way to visualize a bunch of data all at once.
+
+Here is an example of how one can be created (using MNIST data).
+
+```python
+
+# See if torchmetrics exists, if not, install it
+try:
+    import torchmetrics, mlxtend
+    print(f"mlxtend version: {mlxtend.__version__}")
+    assert int(mlxtend.__version__.split(".")[1]) >= 19, "mlxtend verison should be 0.19.0 or higher"
+except:
+    !pip install -q torchmetrics -U mlxtend # <- Note: If you're using Google Colab, this may require restarting the runtime
+    import torchmetrics, mlxtend
+    print(f"mlxtend version: {mlxtend.__version__}")
+
+from tqdm.auto import tqdm
+from torchmetrics import ConfusionMatrix
+from mlxtend.plotting import plot_confusion_matrix
+
+# Make predictions across all test data
+model_2.eval()
+y_preds = []
+with torch.inference_mode():
+  for batch, (X, y) in tqdm(enumerate(test_dataloader)):
+    # Make sure data on right device
+    X, y = X.to(device), y.to(device)
+    # Forward pass
+    y_pred_logits = model_2(X)
+    # Logits -> Pred probs -> Pred label
+    y_pred_labels = torch.argmax(torch.softmax(y_pred_logits, dim=1), dim=1)
+    # Append the labels to the preds list
+    y_preds.append(y_pred_labels)
+  y_preds=torch.cat(y_preds).cpu()
+len(y_preds) 
+
+# Setup confusion matrix
+confmat = ConfusionMatrix(task = "multiclass", num_classes = len(test_data.classes))
+confmat_tensor = confmat(preds = y_preds,
+                         target = test_data.targets)
+
+# Plot the confusion matrix
+fix, ax = plot_confusion_matrix(
+    conf_mat = confmat_tensor.numpy(),
+    class_names = test_data.classes,
+    figsize = (10, 7)
+)
+```
+
+Outputs:
+
+![Confustion Matrix](confusion-matrix.png)

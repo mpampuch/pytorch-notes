@@ -1,6 +1,6 @@
 # PyTorch Notes
 
-## NOTE TO SELF: 19:00 of March 2024 Community Foundational Training
+## NOTE TO SELF: 19:00 of March 2024 Community Foundational Training Session 2
 
 Some tips / things of notes for myself while I'm learning PyTorch
 

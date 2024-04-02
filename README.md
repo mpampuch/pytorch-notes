@@ -1013,6 +1013,45 @@ with `.unsqueeze()`
 
 ## `requires_grad()`
 
+## Concatenating tensors
+
+In PyTorch, `torch.cat()` is a function used for concatenating tensors along a specified dimension. It concatenates the given sequence of tensors in the specified dimension.
+
+Here's the syntax:
+
+```python
+torch.cat(tensors, dim=0, *, out=None) → Tensor
+```
+- `tensors`: A sequence of tensors to concatenate.
+- `dim` (optional): The dimension along which the tensors will be concatenated. Defaults to `0`.
+- `out` (optional): If provided, the output tensor will be placed into this pre-allocated tensor. Its `shape` and `dtype` must be compatible with the expected result. Default is `None`.
+
+Example:
+
+```python
+import torch
+
+# Create some tensors
+tensor1 = torch.tensor([[1, 2], [3, 4]])
+tensor2 = torch.tensor([[5, 6], [7, 8]])
+tensor3 = torch.tensor([[9, 10]])
+
+# Concatenate along dimension 0 (rows)
+result = torch.cat((tensor1, tensor2, tensor3), dim=0)
+
+print(result)
+```
+
+Outputs:
+
+```
+tensor([[ 1,  2],
+        [ 3,  4],
+        [ 5,  6],
+        [ 7,  8],
+        [ 9, 10]])
+```
+
 ## Confusion matrices
 
 Confusion matrices are a good way to visualize a bunch of data all at once.

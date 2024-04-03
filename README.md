@@ -756,6 +756,64 @@ pizza_steak_sushi/ <- overall dataset folder
 
 3. Turning the tensor data into a `torch.utils.data.Dataset` (or loading it with `torchvision.datasets.ImageFolder` if it is an image) and later a `torch.utils.data.DataLoader`
 
+An example of how this is done is as follows:
+
+```python
+# Download 20% data for Pizza/Steak/Sushi from GitHub
+import requests
+import zipfile
+from pathlib import Path
+from torchvision.datasets import ImageFolder
+from torchvision import transforms
+from torch.utils.data import DataLoader
+
+# Setup path to data folder
+data_path = Path("data/")
+image_path = data_path / "pizza_steak_sushi_20_percent"
+
+# If the image folder doesn't exist, download it and prepare it...
+if image_path.is_dir():
+  print(f"{image_path} directory exists.")
+else:
+  print(f"Did not find {image_path} directory, creating one...")
+  image_path.mkdir(parents = True, exist_ok = True)
+
+# Download pizza, steak, sushi data
+with open(data_path / "pizza_steak_sushi_20_percent.zip", "wb") as f:
+  request = requests.get("https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi_20_percent.zip")
+  print("Downloading pizza, steak, sushi 20% data...")
+  f.write(request.content)
+
+# Unzip pizza, steak, and sushi data
+with zipfile.ZipFile(data_path / "pizza_steak_sushi_20_percent.zip", "r") as zip_ref:
+  print("Unzipping pizza, steak, sushi 20% data...")
+  zip_ref.extractall(image_path)
+
+# Transform the data for to standardized tensors
+simple_transform = transforms.Compose([
+    transforms.Resize((64, 64)),
+    transforms.ToTensor()
+])
+
+# Create Datasets
+train_data_20_percent = ImageFolder(train_data_20_percent_path,
+                                    transform = simple_transform)
+
+test_data_20_percent = ImageFolder(test_data_20_percent_path, 
+                                   transform = simple_transform)
+
+# Create DataLoaders
+train_dataloader_20_percent = DataLoader(train_data_20_percent,
+                                         batch_size = 32,
+                                         num_workers = os.cpu_count(),
+                                         shuffle = True)
+
+test_dataloader_20_percent = DataLoader(test_data_20_percent,
+                                        batch_size = 32,
+                                        num_workers = os.cpu_count(),
+                                        shuffle = False)
+```
+
 For more information on the data loading process, [see here](https://www.learnpytorch.io/04_pytorch_custom_datasets/).
 
 ## Organising PyTorch projects

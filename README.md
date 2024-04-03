@@ -545,7 +545,7 @@ Matplotlib is a Python library used for generating plots, charts, histograms, an
 
 In order to pass a tensor into Matplotlib it's important to know two things.
 
-- Matplotlib takes it's input as NumPy arrays
+- Matplotlib takes it's input as NumPy arrays (in `HWC` format)
 - NumPy arrays cannot be generated from tensors that require gradient computation
 
 To this end, the method `torch.Tensor.detach()` can help.

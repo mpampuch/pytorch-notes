@@ -712,7 +712,51 @@ train_features_batch, train_labels_batch = next(iter(train_dataloader))
 
 Overall, this line of code fetches the next batch of training data and separates it into features and labels, assigning them to the variables `train_features_batch` and `train_labels_batch`, respectively. This is often used in training loops to iterate over batches of data for model training.
 
+## Using Custom Data for PyTorch projects
 
+Often times, the data you'll want to run an experiment on won't come ready made in a PyTorch library. To use your own custom data, you need to do a bit of pre-processing on it to make sure it is compatible with pytorch.
+
+To make them compatible with PyTorch, you need to 
+
+1. Download the data and organize it. 
+    
+    - It's of a good idea to organize your data in a directory structure that is already self explanatory with training and testing data seperated and correct labels being used as directory names
+        - Example:
+```
+pizza_steak_sushi/ <- overall dataset folder
+    train/ <- training images
+        pizza/ <- class name as folder name
+            image01.jpeg
+            image02.jpeg
+            ...
+        steak/
+            image24.jpeg
+            image25.jpeg
+            ...
+        sushi/
+            image37.jpeg
+            ...
+    test/ <- testing images
+        pizza/
+            image101.jpeg
+            image102.jpeg
+            ...
+        steak/
+            image154.jpeg
+            image155.jpeg
+            ...
+        sushi/
+            image167.jpeg
+            ...
+```
+
+2. If needed, augmenting the data with `torchvision.transforms` (if working with image data)
+
+3. Transforming the data into tensors
+
+3. Turning the tensor data into a `torch.utils.data.Dataset` (or loading it with `torchvision.datasets.ImageFolder` if it is an image) and later a `torch.utils.data.DataLoader`
+
+For more information on the data loading process, [see here](https://www.learnpytorch.io/04_pytorch_custom_datasets/).
 
 ## Organising PyTorch projects
 

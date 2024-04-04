@@ -1144,7 +1144,57 @@ Precision and recall are two important metrics used to evaluate the performance 
 
 Precision and recall provide complementary insights into the performance of a classification model, helping to assess its ability to make correct positive predictions and capture all positive instances in the dataset.
 
-## `torch.utils.data.DataSet` and `torch.utils.data.DataLoader`
+## Torchinfo
+
+Torchinfo is a Python package that provides a convenient way to print concise summaries of PyTorch models, displaying information such as the input/output shapes of each layer, the number of parameters in each layer, and the total number of parameters in the model. These summaries are helpful for debugging models, understanding their architecture, and ensuring that they are constructed correctly. It can be particularly useful when working with complex neural network architectures or when debugging issues related to input/output shapes.
+
+Torchinfo does not come pre-installed with Google Colab, and so needs to be installed manually as so:
+
+```python
+try:
+  from torchinfo import summary
+except:
+  print(f"[INFO] Couldn't find torchinfo... installing it.")
+  !pip install -q torchinfo
+  from torchinfo import summary
+```
+
+Torch info can be used as follows:
+
+```python
+from torchinfo import summary
+
+model = ConvNet()
+batch_size = 16
+summary(model, input_size=(batch_size, 1, 28, 28))
+```
+
+And will produce an output similar to this 
+
+```
+================================================================================================================
+Layer (type:depth-idx)          Input Shape          Output Shape         Param #            Mult-Adds
+================================================================================================================
+SingleInputNet                  [7, 1, 28, 28]       [7, 10]              --                 --
+├─Conv2d: 1-1                   [7, 1, 28, 28]       [7, 10, 24, 24]      260                1,048,320
+├─Conv2d: 1-2                   [7, 10, 12, 12]      [7, 20, 8, 8]        5,020              2,248,960
+├─Dropout2d: 1-3                [7, 20, 8, 8]        [7, 20, 8, 8]        --                 --
+├─Linear: 1-4                   [7, 320]             [7, 50]              16,050             112,350
+├─Linear: 1-5                   [7, 50]              [7, 10]              510                3,570
+================================================================================================================
+Total params: 21,840
+Trainable params: 21,840
+Non-trainable params: 0
+Total mult-adds (M): 3.41
+================================================================================================================
+Input size (MB): 0.02
+Forward/backward pass size (MB): 0.40
+Params size (MB): 0.09
+Estimated Total Size (MB): 0.51
+================================================================================================================
+```
+
+For more information on how to use it, see [here](https://www.learnpytorch.io/06_pytorch_transfer_learning/#33-getting-a-summary-of-our-model-with-torchinfosummary) or the [torchinfo GitHub](https://github.com/TylerYep/torchinfo).
 
 ## `timeit`
 

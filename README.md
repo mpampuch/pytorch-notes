@@ -474,13 +474,7 @@ The learning rate controls the step size of the update. Other optimization algor
 
 Calling `optimizer.step()` thus iterates through all the parameters registered with the optimizer, updates them according to their respective gradients and the optimization algorithm's update rule, and clears the gradients for the next iteration. This process is central to the training loop of a neural network, where parameters are iteratively updated to minimize the loss function and improve the model's performance.
 
-
-
-
-
-
 ## Saving a model 
-
 
 ### Loading a model
 
@@ -694,6 +688,12 @@ Length of train dataloader: 1875 batches of 32
 Length of test dataloader: 313 batches of 32
 """
 ```
+
+There are also a few other parameters you might want to add to your DataLoaders:
+
+- `num_workers`: This parameter specifies the number of worker processes to use for data loading. Increasing the number of workers can speed up data loading by loading batches in parallel. You can set it to the number of CPU cores by using the `os` library as such `num_workers = os.cpu_count()`.
+
+- `pin_memory`: This parameter specifies whether to use pinned memory for faster data transfer to the GPU. When `pin_memory` is set to `True`, data is moved to CUDA pinned memory before transferring it to the GPU, which can improve the speed of data transfer.
 
 ### Getting the data out of DataLoaders
 

@@ -163,7 +163,7 @@ class ModelName(nn.Module):
       # x = self.conv_block_2(x)
       # x = self.classifier(x)
       # return x
-      return self.classifier(self.block_2(self.block_1(x))) # <- leverage the benefits of operator fusion
+      return self.classifier(self.block_2(self.block_1(x))) # <- Operator fusion
 ```
 ### Creating Blocks within the model using `nn.Sequential()`
 

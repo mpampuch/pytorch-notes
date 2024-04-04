@@ -1012,7 +1012,7 @@ The `torchmetrics.Accuracy` function is a simple wrapper to get the task specifi
 
 Here in this example `torchmetrics.Accuracy` returned `torchmetrics.classification.MulticlassAccuracy`. This function takes two inputs:
 - `preds (Tensor)`: An `int` tensor of shape `(N, ...)` or `float` tensor of shape `(N, C, ...)`. 
-    - If preds is a floating point we `apply torch.argmax` along the `C` dimension to automatically convert probabilities/logits into an `int` tensor.
+    - If preds is a floating point the function applies `torch.argmax` along the `C` dimension to automatically convert probabilities/logits into an `int` tensor.
 
 - `target` (Tensor): An `int` tensor of shape `(N, ...)`
 

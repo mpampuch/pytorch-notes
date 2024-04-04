@@ -950,6 +950,13 @@ A very useful magic command to help convert the code in the code cell into a scr
 
 Executing this code cell will write all the code in the code cell into a script in the provided path.
 
+Examples of python scripts can be found in this GitHub Repository inside the `modules` folder. The `train.py` file contains the information needed to train a model and can be run using 
+
+```bash
+python train.py --num_epochs 5 --batch_size 128 --hidden_units 128 --hidden_units 128 --learning_rate 0.0003
+```
+
+Take a look at the `modules` directory to see how all these python scripts interact to build and train a functioning model.
 
 ## `model.parameters` vs `model.state_dict`
 

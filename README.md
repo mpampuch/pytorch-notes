@@ -493,7 +493,77 @@ Calling `optimizer.step()` thus iterates through all the parameters registered w
 
 ## Saving a model 
 
+For saving and loading models in PyTorch, there are three main methods you should be aware of (all of below have been taken from the [PyTorch saving and loading models guide](https://pytorch.org/tutorials/beginner/saving_loading_models.html#saving-loading-model-for-inference)):
+
+|PyTorch method|What does it do?|
+|:----|:----|
+|[`torch.save`](https://pytorch.org/docs/stable/torch.html?highlight=save#torch.save)|Saves a serialized object to disk using Python's [`pickle`](https://docs.python.org/3/library/pickle.html) utility. Models, tensors and various other Python objects like dictionaries can be saved using `torch.save`.|
+|[`torch.load`](https://pytorch.org/docs/stable/torch.html?highlight=torch%20load#torch.load)|Uses `pickle`'s unpickling features to deserialize and load pickled Python object files (like models, tensors or dictionaries) into memory. You can also set which device to load the object to (CPU, GPU etc).|
+|[`torch.nn.Module.load_state_dict`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=load_state_dict#torch.nn.Module.load_state_dict)|Loads a model's parameter dictionary (`model.state_dict()`) using a saved `state_dict()` object.|
+
+**Note**: As stated in [Python's `pickle` documentation](https://docs.python.org/3/library/pickle.html), the `pickle` module **is not secure**. That means you should only ever unpickle (load) data you trust. That goes for loading PyTorch models as well. Only ever use saved PyTorch models from sources you trust.
+
+### PyTorch model's `state_dict()`
+
+The recommended way for saving and loading a model for inference (making predictions) is by saving and loading a model's `state_dict()`.
+
+This can be done a few steps:
+
+1. Create a directory for saving models to called models using Python's `pathlib` module.
+
+2. Create a file path to save the model to.
+
+3. Call `torch.save(obj, f)` where `obj` is the target model's `state_dict()` and `f` is the filename of where to save the model.
+
+**Note**: It's common convention for PyTorch saved models or objects to end with `.pt` or `.pth`.
+
+Example: 
+
+```python
+from pathlib import Path
+
+# 1. Create models directory 
+MODEL_PATH = Path("models")
+MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
+# 2. Create model save path 
+MODEL_NAME = "01_pytorch_workflow_model_0.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
+
+# 3. Save the model state dict 
+print(f"Saving model to: {MODEL_SAVE_PATH}")
+torch.save(obj=model_0.state_dict(), # only saving the state_dict() only saves the models learned parameters
+           f=MODEL_SAVE_PATH) 
+```
+
 ### Loading a model
+
+Once you have a saved model's `state_dict()` saved on your machine, you can now load it in using `torch.nn.Module.load_state_dict(torch.load(f))` where `f` is the filepath of the saved model `state_dict()`.
+
+Why call `torch.load()` inside `torch.nn.Module.load_state_dict()`?
+
+Because we only saved the model's `state_dict()` which is a dictionary of learned parameters and not the entire model, we first have to load the `state_dict()` with `torch.load()` and then pass that `state_dict()` to a new instance of our model (which is a subclass of `nn.Module`).
+
+Why not save the entire model?
+
+Saving the entire model rather than just the `state_dict()` is more intuitive, however, accornding to the PyTorch documentation:
+
+> The disadvantage of this approach (*saving the whole model*) is that the serialized data is bound to the specific classes and the exact directory structure used when the model is saved...
+
+> Because of this, your code can break in various ways when used in other projects or after refactors.
+
+So instead, saving and loading just the `state_dict()` (dictionary of model parameters) is a more flexible method.
+
+Example:
+
+```python
+# Instantiate a new instance of our model (this will be instantiated with random weights)
+loaded_model_0 = NameOfModelClass()
+
+# Load the state_dict of our saved model (this will update the new instance of our model with trained weights)
+loaded_model_0.load_state_dict(torch.load(f=MODEL_SAVE_PATH))
+```
+
 
 ## PyTorch important tools and libraries
 
@@ -881,6 +951,17 @@ Executing this code cell will write all the code in the code cell into a script 
 
 ## `model.parameters` vs `model.state_dict`
 
+In PyTorch, both model.parameters() and model.state_dict() are methods of viewing the parameters of a neural network model, but they are used in seperate circumstances:
+
+`model.parameters()` returns an iterator over all the learnable parameters of the model. These parameters include weights and biases of layers such as linear layers, convolutional layers, etc.
+
+When you're training a model, you typically use `model.parameters()` to obtain the parameters that need to be updated by the optimizer during the training process.
+
+However, if you wanted to view the parameters of your model yourself, the output of `model.parameters()` might be too overwhelming to understand so it's better to use `model.state_dict()` instead.
+
+`model.state_dict()` returns a dictionary containing the entire state of the model, including parameters and other persistent buffers. The keys of the dictionary are the names of the parameters, and the values are the parameter tensors.
+
+This method is often used for checkpointing the model or for saving and loading model weights and configurations, but can also be used to preview the parameters of a model (however if the model get's too big then the output of this method will also become uninterpretable and other methods of checking the models parameters will need to be employed).
 
 
 ## `model.train()`, `model.eval()`, and `torch.inference_mode()` 

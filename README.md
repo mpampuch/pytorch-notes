@@ -564,6 +564,7 @@ loaded_model_0 = NameOfModelClass()
 loaded_model_0.load_state_dict(torch.load(f=MODEL_SAVE_PATH))
 ```
 
+If you get the output `<All keys matched successfully>`, then it should have loaded correctly. It may still be a good idea to pass some data through your original model and your loaded model to see if you get the same output to be extra sure that your model was loaded correctly.
 
 ## PyTorch important tools and libraries
 

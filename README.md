@@ -438,6 +438,7 @@ Once you've ensured there's no shape issues that can exist in your model you can
 
 
 ## Loss functions
+- `nn.CrossEntropyLoss()` creates an instance of the CrossEntropyLoss class, which expects **logits** as inputs (raw scores from the network) and class labels. It internally applies `torch.log_softmax` to the logits before computing the negative log likelihood loss.
 - BCEWithLogitsLoss() # Binary classification
     - Combines sigmoid activation function with BCELoss. Better than BCELoss because more numerically stable
 
@@ -1006,6 +1007,14 @@ torchmetrics_accuracy = Accuracy(task='multiclass', num_classes=4).to(device)
 # Calculate accuracy
 torchmetrics_accuracy(y_preds, y_test)
 ```
+
+The `torchmetrics.Accuracy` function is a simple wrapper to get the task specific versions of this metric, which is done by setting the task argument to either `binary`, `multiclass` or `multilabel`(which calls `torchmetrics.classification.BinaryAccuracy`, `torchmetrics.classification.MulticlassAccuracy`, or `torchmetrics.classification.MultilabelAccuracy`, respectively).
+
+Here in this example `torchmetrics.Accuracy` returned `torchmetrics.classification.MulticlassAccuracy`. This function takes two inputs:
+- `preds (Tensor)`: An `int` tensor of shape `(N, ...)` or `float` tensor of shape `(N, C, ...)`. 
+    - If preds is a floating point we `apply torch.argmax` along the `C` dimension to automatically convert probabilities/logits into an `int` tensor.
+
+- `target` (Tensor): An `int` tensor of shape `(N, ...)`
 
 ### Precision vs Recall
 

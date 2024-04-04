@@ -149,6 +149,22 @@ By calling `super().__init__()`, you ensure that the subclass inherits all the a
 
 The `forward` method in a PyTorch `nn.Module` subclass defines the computation performed when the module is called with input data. This method outlines how input data flows through the network's layers to produce an output (defines the forward computation of the model). It ***must*** be overwritten for any class that inherits from `nn.Module` in order for the model to work (otherwise the model doesn't know how to pass the data through the layers).
 
+#### Operator fusion
+
+Operator fusion, in the context of deep learning frameworks like PyTorch, refers to the optimization technique where consecutive operations or layers are combined or fused into a single operation. By leveraging operator fusion, the deep learning framework can optimize the execution of operations, potentially reducing memory usage and improving performance, especially on hardware accelerators like GPUs and TPUs where memory access and data movement can be significant bottlenecks.
+
+```python
+class ModelName(nn.Module):
+    
+    ...
+
+    def forward(self, x: torch.Tensor):
+      # x = self.conv_block_1(x)
+      # x = self.conv_block_2(x)
+      # x = self.classifier(x)
+      # return x
+      return self.classifier(self.block_2(self.block_1(x))) # <- leverage the benefits of operator fusion
+```
 ### Creating Blocks within the model using `nn.Sequential()`
 
 In PyTorch, `torch.nn.Sequential` is a container module that allows you to stack multiple layers or modules sequentially. It's commonly used to define a neural network model by specifying the layers or blocks one after another. You can define each block of your neural network as a sequence of layers or modules. These blocks can consist of linear layers, convolutional layers, activation functions, normalization layers, etc.

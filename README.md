@@ -1042,7 +1042,9 @@ Precision and recall provide complementary insights into the performance of a cl
 
 ## `timeit`
 
-`from timeit import default_timer as timer`
+```python
+from timeit import default_timer as timer
+```
 
 ## tqdm
 

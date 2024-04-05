@@ -1690,7 +1690,7 @@ This table covers a few.
 |[Weights & Biases Experiment Tracking](https://wandb.ai/site/experiment-tracking)|Minimal, install [`wandb`](https://docs.wandb.ai/quickstart), make an account|Incredible user experience, make experiments public, tracks almost anything.|Requires external resource outside of PyTorch.|Free for personal use|
 |[MLFlow](https://mlflow.org/)|Minimal, install `mlflow` and starting tracking|Fully open-source MLOps lifecycle management, many integrations.|Little bit harder to setup a remote tracking server than other services.|Free|
 
-## TensorBoard
+### TensorBoard
 
 TensorBoard is a part of the TensorFlow deep learning library and is an excellent way to visualize different parts of your model.
 
@@ -1704,10 +1704,7 @@ The default location for `log_dir` is under `runs/CURRENT_DATETIME_HOSTNAME`, wh
 
 The outputs of the `SummaryWriter()` are saved in TensorBoard format, which makes them compatible with the TensorBoard display.
 
-## Extra Resources
-
-- [To help understand CNN's](https://poloclub.github.io/cnn-explainer/)
-- [To help understand Transformers](https://jalammar.github.io/illustrated-transformer/)
+### Creating a helper function to track experiments
 
 ## Adding batch dimensions
 
@@ -1819,3 +1816,18 @@ fix, ax = plot_confusion_matrix(
 Outputs:
 
 ![Confustion Matrix](confusion-matrix.png)
+
+## Model deployment
+
+Once you have a working model, you may want to deploy the model so that it can exist somewhere accessible on the internet or on a desired device as opposed to on Google Colab or some python script in a personal repository. 
+
+The process of "deploying" machine learning models is known as MLOps.
+
+For more information on how to deploy models you can [see here](https://www.learnpytorch.io/09_pytorch_model_deployment/).
+
+## Extra Resources
+
+- [The official PyTorch documentation](https://pytorch.org/docs/stable/index.html)
+- [The Learn PyTorch for Deep Learning book](https://www.learnpytorch.io/) for more detailed explainations and examples on a lot of the concepts discussed here
+- [To help understand CNN's](https://poloclub.github.io/cnn-explainer/)
+- [To help understand Transformers](https://jalammar.github.io/illustrated-transformer/)

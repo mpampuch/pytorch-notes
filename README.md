@@ -1720,7 +1720,7 @@ In PyTorch, `torch.cat()` is a function used for concatenating tensors along a s
 Here's the syntax:
 
 ```python
-torch.cat(tensors, dim=0, *, out=None) → Tensor
+torch.cat(tensors, dim=0, *, out=None) -> Tensor
 ```
 - `tensors`: A sequence of tensors to concatenate.
 - `dim` (optional): The dimension along which the tensors will be concatenated. Defaults to `0`.

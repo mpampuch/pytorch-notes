@@ -905,7 +905,7 @@ test_dataloader_20_percent = DataLoader(test_data_20_percent,
 
 For more information on the data loading process, [see here](https://www.learnpytorch.io/04_pytorch_custom_datasets/).
 
-## Organising PyTorch projects
+## Organizing PyTorch projects
 
 Once you have a machine learning project that you want to save, it may be a good idea to organize it into modules. 
 
@@ -1816,6 +1816,14 @@ fix, ax = plot_confusion_matrix(
 Outputs:
 
 ![Confustion Matrix](confusion-matrix.png)
+
+## Helper Functions
+
+Often times there is a lot of little code snippets that can make working with, validating, and debugging PyTorch code more efficient.
+
+Inside of the `modules` directory I've created a file called `helper_functions.py`. This file contains the most useful functions I've made/encountered for working with PyTorch.
+
+**Note**: In a professional setting it may be useful to put these functions inside a `utils.py` file but for the sake of this notes repository I didn't want to pollute the `modules/utils.py` file with code that wasn't relevant to the [Organizing PyTorch projects](#Organizing-PyTorch-projects) section.
 
 ## Model deployment
 

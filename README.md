@@ -1196,7 +1196,7 @@ Estimated Total Size (MB): 0.51
 
 For more information on how to use it, see [here](https://www.learnpytorch.io/06_pytorch_transfer_learning/#33-getting-a-summary-of-our-model-with-torchinfosummary) or the [torchinfo GitHub](https://github.com/TylerYep/torchinfo).
 
-## Timing your models
+## Timing your models with `timeit`
 
 Timing your models can be done easily using the `timeit` library
 
@@ -1221,9 +1221,9 @@ print(f"[INFO] Total training time: {end_time-start_time:.3f} seconds")
 
 For more information see [here](https://www.learnpytorch.io/03_pytorch_computer_vision/#32-creating-a-function-to-time-our-experiments).
 
-## tqdm
+## Adding a progress bar to your models with `tqdm`
 
-The tqdm library provides a progress bar for your code. It can wrap around loops and tell you the progress of your loop.
+The `tqdm` library provides a progress bar for your code. It can wrap around loops and tell you the progress of your loop.
 
 1. When running in a Jupyter notebook or an IPython terminal, it will use the `tqdm.notebook` submodule, which provides a more interactive progress bar.
 

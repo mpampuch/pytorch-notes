@@ -1224,8 +1224,6 @@ Transfer learning is a machine learning technique where a model trained on one t
 
 Often times machine learning architects will start a new data science project by using another trained model as a backbone and modifying it for their purpose 
 
-### "Freezing" and "Unfreezing"
-
 ### Resources for finding pre-trained models 
 
 |**Location**|**What's there?**|**Link(s)**|
@@ -1235,34 +1233,13 @@ Often times machine learning architects will start a new data science project by
 |**`timm` (PyTorch Image Models) library**|Almost all of the latest and greatest computer vision models in PyTorch code as well as plenty of other helpful computer vision features.|https://github.com/rwightman/pytorch-image-models|
 |**Paperswithcode**|A collection of the latest state-of-the-art machine learning papers with code implementations attached. You can also find benchmarks here of model performance on different tasks.|https://paperswithcode.com/|
 
-## Experiment tracking
-
-If you're running lots of different experiments, experiment tracking helps you figure out what works and what doesn't.
-
-
-Why track experiments?
-If you're only running a handful of models (like we've done so far), it might be okay just to track their results in print outs and a few dictionaries.
-
-However, as the number of experiments you run starts to increase, this naive way of tracking could get out of hand. So if you keep experimenting with models you'll want a way to track them.
-
-There are as many different ways to track machine learning experiments as there is experiments to run.
-
-This table covers a few.
-
-|**Method**|**Setup**|**Pros**|**Cons**|**Cost**|
-|:----|:----|:----|:----|:----|
-|Python dictionaries, CSV files, print outs|None|Easy to setup, runs in pure Python|Hard to keep track of large numbers of experiments|Free|
-|[TensorBoard](https://www.tensorflow.org/tensorboard/get_started)|Minimal, install [`tensorboard`](https://pypi.org/project/tensorboard/)|Extensions built into PyTorch, widely recognized and used, easily scales.|User-experience not as nice as other options.|Free|
-|[Weights & Biases Experiment Tracking](https://wandb.ai/site/experiment-tracking)|Minimal, install [`wandb`](https://docs.wandb.ai/quickstart), make an account|Incredible user experience, make experiments public, tracks almost anything.|Requires external resource outside of PyTorch.|Free for personal use|
-|[MLFlow](https://mlflow.org/)|Minimal, install `mlflow` and starting tracking|Fully open-source MLOps lifecycle management, many integrations.|Little bit harder to setup a remote tracking server than other services.|Free|
-
 ### Transforming data for transfer learning
 
 When using a pretrained model, it's important that **your custom data going into the model is prepared in the same way as the original training data that went into the model**.
 
 You can manually create these transforms on your data using `transforms.Normalize()` as shown [here](https://www.learnpytorch.io/06_pytorch_transfer_learning/#21-creating-a-transform-for-torchvisionmodels-manual-creation). 
 
-However, as of `torchvision` v0.13+, an automatic transform creation feature has been added.
+However, as of `torchvision v0.13+`, an automatic transform creation feature has been added.
 
 When you setup a model from `torchvision.models` and select the pretrained model weights you'd like to use, for example, say we'd like to use:
 
@@ -1315,12 +1292,239 @@ Example:
 train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(train_dir=train_dir,
                                                                                test_dir=test_dir,
                                                                                transform=auto_transforms, # perform same data transforms on our own data as the pretrained model
-                                                                               batch_size=32) 
+                                                                               batch_size=32) # set mini-batch size to 32
 
 train_dataloader, test_dataloader, class_names
 ```
 
+### Downloading a pre-trained model
 
+Once you have a pre-trained model you would like to use as a scaffold, the next step is to download it into your environment so that you can begin tweaking it.
+
+This can be done as shown:
+- **Note**: as of `torchvision v0.13+`, downloading a model also involves the use of the `.DEFAULT` attrubute
+
+```python
+# OLD: Setup the model with pretrained weights and send it to the target device (this was prior to torchvision v0.13)
+# model = torchvision.models.efficientnet_b0(pretrained=True).to(device) # OLD method (with pretrained=True)
+
+# NEW: Setup the model with pretrained weights and send it to the target device (torchvision v0.13+)
+weights = torchvision.models.EfficientNet_B0_Weights.DEFAULT # .DEFAULT = best available weights 
+model = torchvision.models.efficientnet_b0(weights=weights).to(device)
+```
+
+### "Freezing" and "Unfreezing" layers
+
+The process of transfer learning usually goes: 
+1. Freeze some base layers of a pretrained model (typically the features section) 
+2. Adjust the output layers (also called head/classifier layers) to suit your needs.
+
+To freeze layers means to keep them how they are during training. For example, if your model has pretrained layers, to freeze them would be to say, "don't change any of the patterns in these layers during training, keep them how they are." In essence, we'd like to keep the pretrained weights/patterns our model has learned from its original use-case as a backbone and then only change the output layers.
+
+You can freeze all of the layers/parameters in the features section by setting the attribute `requires_grad=False`. For parameters with `requires_grad=False`, PyTorch doesn't track gradient updates and in turn, these parameters won't be changed by our optimizer during training. In essence, a parameter with `requires_grad=False` is "untrainable" or "frozen" in place.
+
+Example:
+
+```python
+# Freeze all base layers in the "features" section of the model (the feature extractor) by setting requires_grad=False
+for param in model.features.parameters():
+    param.requires_grad = False
+```
+
+The "trainability" of the layers can be easily visualized with torchinfo.
+
+```python
+# Print a summary using torchinfo 
+summary(model=model, 
+        input_size=(32, 3, 224, 224),
+        col_names=["input_size", "output_size", "num_params", "trainable"],
+        col_width=20,
+        row_settings=["var_names"]
+) 
+```
+
+Outputs (scroll right to see trainability column):
+
+```
+============================================================================================================================================
+Layer (type (var_name))                                      Input Shape          Output Shape         Param #              Trainable
+============================================================================================================================================
+EfficientNet (EfficientNet)                                  [32, 3, 224, 224]    [32, 1000]           --                   Partial
+├─Sequential (features)                                      [32, 3, 224, 224]    [32, 1280, 7, 7]     --                   False
+│    └─Conv2dNormActivation (0)                              [32, 3, 224, 224]    [32, 32, 112, 112]   --                   False
+│    │    └─Conv2d (0)                                       [32, 3, 224, 224]    [32, 32, 112, 112]   (864)                False
+│    │    └─BatchNorm2d (1)                                  [32, 32, 112, 112]   [32, 32, 112, 112]   (64)                 False
+│    │    └─SiLU (2)                                         [32, 32, 112, 112]   [32, 32, 112, 112]   --                   --
+│    └─Sequential (1)                                        [32, 32, 112, 112]   [32, 16, 112, 112]   --                   False
+│    │    └─MBConv (0)                                       [32, 32, 112, 112]   [32, 16, 112, 112]   (1,448)              False
+│    └─Sequential (2)                                        [32, 16, 112, 112]   [32, 24, 56, 56]     --                   False
+│    │    └─MBConv (0)                                       [32, 16, 112, 112]   [32, 24, 56, 56]     (6,004)              False
+│    │    └─MBConv (1)                                       [32, 24, 56, 56]     [32, 24, 56, 56]     (10,710)             False
+│    └─Sequential (3)                                        [32, 24, 56, 56]     [32, 40, 28, 28]     --                   False
+│    │    └─MBConv (0)                                       [32, 24, 56, 56]     [32, 40, 28, 28]     (15,350)             False
+│    │    └─MBConv (1)                                       [32, 40, 28, 28]     [32, 40, 28, 28]     (31,290)             False
+│    └─Sequential (4)                                        [32, 40, 28, 28]     [32, 80, 14, 14]     --                   False
+│    │    └─MBConv (0)                                       [32, 40, 28, 28]     [32, 80, 14, 14]     (37,130)             False
+│    │    └─MBConv (1)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     (102,900)            False
+│    │    └─MBConv (2)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     (102,900)            False
+│    └─Sequential (5)                                        [32, 80, 14, 14]     [32, 112, 14, 14]    --                   False
+│    │    └─MBConv (0)                                       [32, 80, 14, 14]     [32, 112, 14, 14]    (126,004)            False
+│    │    └─MBConv (1)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    (208,572)            False
+│    │    └─MBConv (2)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    (208,572)            False
+│    └─Sequential (6)                                        [32, 112, 14, 14]    [32, 192, 7, 7]      --                   False
+│    │    └─MBConv (0)                                       [32, 112, 14, 14]    [32, 192, 7, 7]      (262,492)            False
+│    │    └─MBConv (1)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    │    └─MBConv (2)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    │    └─MBConv (3)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    └─Sequential (7)                                        [32, 192, 7, 7]      [32, 320, 7, 7]      --                   False
+│    │    └─MBConv (0)                                       [32, 192, 7, 7]      [32, 320, 7, 7]      (717,232)            False
+│    └─Conv2dNormActivation (8)                              [32, 320, 7, 7]      [32, 1280, 7, 7]     --                   False
+│    │    └─Conv2d (0)                                       [32, 320, 7, 7]      [32, 1280, 7, 7]     (409,600)            False
+│    │    └─BatchNorm2d (1)                                  [32, 1280, 7, 7]     [32, 1280, 7, 7]     (2,560)              False
+│    │    └─SiLU (2)                                         [32, 1280, 7, 7]     [32, 1280, 7, 7]     --                   --
+├─AdaptiveAvgPool2d (avgpool)                                [32, 1280, 7, 7]     [32, 1280, 1, 1]     --                   --
+├─Sequential (classifier)                                    [32, 1280]           [32, 1000]           --                   True
+│    └─Dropout (0)                                           [32, 1280]           [32, 1280]           --                   --
+│    └─Linear (1)                                            [32, 1280]           [32, 1000]           1,281,000            True
+============================================================================================================================================
+Total params: 5,288,548
+Trainable params: 1,281,000
+Non-trainable params: 4,007,548
+Total mult-adds (G): 12.35
+============================================================================================================================================
+Input size (MB): 19.27
+Forward/backward pass size (MB): 3452.35
+Params size (MB): 21.15
+Estimated Total Size (MB): 3492.77
+============================================================================================================================================
+```
+Now in order to "unfreeze" you're desired layers (most likely just the output layer), the easiest way to do this would be to just redeclare your output block.
+
+The current ouput block in this example model is called classifier and consists of:
+
+```
+(classifier): Sequential(
+    (0): Dropout(p=0.2, inplace=True)
+    (1): Linear(in_features=1280, out_features=1000, bias=True)
+```
+
+The output block in this model has a dropout layer and a linear layer. These should be kept as similar as possible so only change the section you need (i.e. redeclare the dropout layer but keep it as it was and keep the `in_features` as they are in the linear layer, only modifying the `out_features` to suit out needs). 
+
+Also it's important to put the new classifier layer should be on the same device as the model.
+
+```python
+# Get the length of class_names (one output unit for each class)
+output_shape = len(class_names)
+
+# Recreate the classifier layer and seed it to the target device
+model.classifier = torch.nn.Sequential(
+    torch.nn.Dropout(p=0.2, inplace=True), 
+    torch.nn.Linear(in_features=1280, 
+                    out_features=output_shape, # same number of output units as our number of classes
+                    bias=True)).to(device)
+```
+
+Now when you rerun the model summary...
+
+```python
+# Print a summary using torchinfo 
+summary(model=model, 
+        input_size=(32, 3, 224, 224),
+        col_names=["input_size", "output_size", "num_params", "trainable"],
+        col_width=20,
+        row_settings=["var_names"]
+) 
+```
+
+Outputs (scroll right to see trainability column):
+
+```
+============================================================================================================================================
+Layer (type (var_name))                                      Input Shape          Output Shape         Param #              Trainable
+============================================================================================================================================
+EfficientNet (EfficientNet)                                  [32, 3, 224, 224]    [32, 3]              --                   Partial
+├─Sequential (features)                                      [32, 3, 224, 224]    [32, 1280, 7, 7]     --                   False
+│    └─Conv2dNormActivation (0)                              [32, 3, 224, 224]    [32, 32, 112, 112]   --                   False
+│    │    └─Conv2d (0)                                       [32, 3, 224, 224]    [32, 32, 112, 112]   (864)                False
+│    │    └─BatchNorm2d (1)                                  [32, 32, 112, 112]   [32, 32, 112, 112]   (64)                 False
+│    │    └─SiLU (2)                                         [32, 32, 112, 112]   [32, 32, 112, 112]   --                   --
+│    └─Sequential (1)                                        [32, 32, 112, 112]   [32, 16, 112, 112]   --                   False
+│    │    └─MBConv (0)                                       [32, 32, 112, 112]   [32, 16, 112, 112]   (1,448)              False
+│    └─Sequential (2)                                        [32, 16, 112, 112]   [32, 24, 56, 56]     --                   False
+│    │    └─MBConv (0)                                       [32, 16, 112, 112]   [32, 24, 56, 56]     (6,004)              False
+│    │    └─MBConv (1)                                       [32, 24, 56, 56]     [32, 24, 56, 56]     (10,710)             False
+│    └─Sequential (3)                                        [32, 24, 56, 56]     [32, 40, 28, 28]     --                   False
+│    │    └─MBConv (0)                                       [32, 24, 56, 56]     [32, 40, 28, 28]     (15,350)             False
+│    │    └─MBConv (1)                                       [32, 40, 28, 28]     [32, 40, 28, 28]     (31,290)             False
+│    └─Sequential (4)                                        [32, 40, 28, 28]     [32, 80, 14, 14]     --                   False
+│    │    └─MBConv (0)                                       [32, 40, 28, 28]     [32, 80, 14, 14]     (37,130)             False
+│    │    └─MBConv (1)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     (102,900)            False
+│    │    └─MBConv (2)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     (102,900)            False
+│    └─Sequential (5)                                        [32, 80, 14, 14]     [32, 112, 14, 14]    --                   False
+│    │    └─MBConv (0)                                       [32, 80, 14, 14]     [32, 112, 14, 14]    (126,004)            False
+│    │    └─MBConv (1)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    (208,572)            False
+│    │    └─MBConv (2)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    (208,572)            False
+│    └─Sequential (6)                                        [32, 112, 14, 14]    [32, 192, 7, 7]      --                   False
+│    │    └─MBConv (0)                                       [32, 112, 14, 14]    [32, 192, 7, 7]      (262,492)            False
+│    │    └─MBConv (1)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    │    └─MBConv (2)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    │    └─MBConv (3)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    └─Sequential (7)                                        [32, 192, 7, 7]      [32, 320, 7, 7]      --                   False
+│    │    └─MBConv (0)                                       [32, 192, 7, 7]      [32, 320, 7, 7]      (717,232)            False
+│    └─Conv2dNormActivation (8)                              [32, 320, 7, 7]      [32, 1280, 7, 7]     --                   False
+│    │    └─Conv2d (0)                                       [32, 320, 7, 7]      [32, 1280, 7, 7]     (409,600)            False
+│    │    └─BatchNorm2d (1)                                  [32, 1280, 7, 7]     [32, 1280, 7, 7]     (2,560)              False
+│    │    └─SiLU (2)                                         [32, 1280, 7, 7]     [32, 1280, 7, 7]     --                   --
+├─AdaptiveAvgPool2d (avgpool)                                [32, 1280, 7, 7]     [32, 1280, 1, 1]     --                   --
+├─Sequential (classifier)                                    [32, 1280]           [32, 3]              --                   True
+│    └─Dropout (0)                                           [32, 1280]           [32, 1280]           --                   --
+│    └─Linear (1)                                            [32, 1280]           [32, 3]              3,843                True
+============================================================================================================================================
+Total params: 4,011,391
+Trainable params: 3,843
+Non-trainable params: 4,007,548
+Total mult-adds (G): 12.31
+============================================================================================================================================
+Input size (MB): 19.27
+Forward/backward pass size (MB): 3452.09
+Params size (MB): 16.05
+Estimated Total Size (MB): 3487.41
+============================================================================================================================================
+```
+
+You see that the last block of the model has been "unlocked" or "unfrozen" and is now trainable.
+
+To summarize all the important details here:
+
+- **Trainable column** - You'll see that many of the base layers (the ones in the features portion) have their `Trainable` value as `False`. This is because we set their attribute `requires_grad=False`. Unless we change this, these layers won't be updated during furture training.
+- **Output shape** of classifier - The classifier portion of the model now has an `Output Shape` value of `[32, 3]` instead of `[32, 1000]`. It's `Trainable` value is also `True`. This means its parameters will be updated during training. In essence, we're using the features portion to feed our classifier portion a base representation of an image and then our classifier layer is going to learn how to base representation aligns with our problem.
+- **Less trainable parameters** - Previously there was `5,288,548` trainable parameters. But since we froze many of the layers of the model and only left the classifier as trainable, there's now only `3,843` trainable parameters. Though there's also `4,007,548` non-trainable parameters, these will create a base representation of our input images to feed into our classifier layer.
+  - **Note**: The more trainable parameters a model has, the more compute power/longer it takes to train. Freezing the base layers of our model and leaving it with less trainable parameters means our model should train quite quickly. This is one huge benefit of transfer learning, taking the already learned parameters of a model trained on a problem similar to yours and only tweaking the outputs slightly to suit your problem.
+
+You can refer to this slide to quickly understand the desired output a transfer learning model.
+
+![A transfer learning model](transfer-learning-model.png)
+
+## Experiment tracking
+
+If you're running lots of different experiments, experiment tracking helps you figure out what works and what doesn't.
+
+
+Why track experiments?
+If you're only running a handful of models (like we've done so far), it might be okay just to track their results in print outs and a few dictionaries.
+
+However, as the number of experiments you run starts to increase, this naive way of tracking could get out of hand. So if you keep experimenting with models you'll want a way to track them.
+
+There are as many different ways to track machine learning experiments as there is experiments to run.
+
+This table covers a few.
+
+|**Method**|**Setup**|**Pros**|**Cons**|**Cost**|
+|:----|:----|:----|:----|:----|
+|Python dictionaries, CSV files, print outs|None|Easy to setup, runs in pure Python|Hard to keep track of large numbers of experiments|Free|
+|[TensorBoard](https://www.tensorflow.org/tensorboard/get_started)|Minimal, install [`tensorboard`](https://pypi.org/project/tensorboard/)|Extensions built into PyTorch, widely recognized and used, easily scales.|User-experience not as nice as other options.|Free|
+|[Weights & Biases Experiment Tracking](https://wandb.ai/site/experiment-tracking)|Minimal, install [`wandb`](https://docs.wandb.ai/quickstart), make an account|Incredible user experience, make experiments public, tracks almost anything.|Requires external resource outside of PyTorch.|Free for personal use|
+|[MLFlow](https://mlflow.org/)|Minimal, install `mlflow` and starting tracking|Fully open-source MLOps lifecycle management, many integrations.|Little bit harder to setup a remote tracking server than other services.|Free|
 
 ## TensorBoard
 
@@ -1385,6 +1589,16 @@ tensor([[ 1,  2],
         [ 5,  6],
         [ 7,  8],
         [ 9, 10]])
+```
+
+## Dropout
+
+Dropout layers randomly remove connections between two neural network layers with a probability of `p`. For example, if `p=0.2`, 20% of connections between neural network layers will be removed at random each pass. This practice is meant to help regularize (prevent overfitting) a model by making sure the connections that remain learn features to compensate for the removal of the other connections (hopefully these remaining features are more general).
+
+Dropout layers can be created in pytorch using the same using `torch.nn.Dropout`. For example:
+
+```python
+torch.nn.Dropout(p=0.2, inplace=True)
 ```
 
 ## Confusion matrices

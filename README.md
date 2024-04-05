@@ -1332,6 +1332,74 @@ weights = torchvision.models.EfficientNet_B0_Weights.DEFAULT # .DEFAULT = best a
 model = torchvision.models.efficientnet_b0(weights=weights).to(device)
 ```
 
+Now you can observe your model with torchinfo
+
+```python
+# Print a summary using torchinfo 
+summary(model=model, 
+        input_size=(32, 3, 224, 224),
+        col_names=["input_size", "output_size", "num_params", "trainable"],
+        col_width=20,
+        row_settings=["var_names"]
+) 
+```
+
+Outputs:
+
+```
+============================================================================================================================================
+Layer (type (var_name))                                      Input Shape          Output Shape         Param #              Trainable
+============================================================================================================================================
+EfficientNet (EfficientNet)                                  [32, 3, 224, 224]    [32, 1000]           --                   True
+├─Sequential (features)                                      [32, 3, 224, 224]    [32, 1280, 7, 7]     --                   True
+│    └─Conv2dNormActivation (0)                              [32, 3, 224, 224]    [32, 32, 112, 112]   --                   True
+│    │    └─Conv2d (0)                                       [32, 3, 224, 224]    [32, 32, 112, 112]   864                  True
+│    │    └─BatchNorm2d (1)                                  [32, 32, 112, 112]   [32, 32, 112, 112]   64                   True
+│    │    └─SiLU (2)                                         [32, 32, 112, 112]   [32, 32, 112, 112]   --                   --
+│    └─Sequential (1)                                        [32, 32, 112, 112]   [32, 16, 112, 112]   --                   True
+│    │    └─MBConv (0)                                       [32, 32, 112, 112]   [32, 16, 112, 112]   1,448                True
+│    └─Sequential (2)                                        [32, 16, 112, 112]   [32, 24, 56, 56]     --                   True
+│    │    └─MBConv (0)                                       [32, 16, 112, 112]   [32, 24, 56, 56]     6,004                True
+│    │    └─MBConv (1)                                       [32, 24, 56, 56]     [32, 24, 56, 56]     10,710               True
+│    └─Sequential (3)                                        [32, 24, 56, 56]     [32, 40, 28, 28]     --                   True
+│    │    └─MBConv (0)                                       [32, 24, 56, 56]     [32, 40, 28, 28]     15,350               True
+│    │    └─MBConv (1)                                       [32, 40, 28, 28]     [32, 40, 28, 28]     31,290               True
+│    └─Sequential (4)                                        [32, 40, 28, 28]     [32, 80, 14, 14]     --                   True
+│    │    └─MBConv (0)                                       [32, 40, 28, 28]     [32, 80, 14, 14]     37,130               True
+│    │    └─MBConv (1)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     102,900              True
+│    │    └─MBConv (2)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     102,900              True
+│    └─Sequential (5)                                        [32, 80, 14, 14]     [32, 112, 14, 14]    --                   True
+│    │    └─MBConv (0)                                       [32, 80, 14, 14]     [32, 112, 14, 14]    126,004              True
+│    │    └─MBConv (1)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    208,572              True
+│    │    └─MBConv (2)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    208,572              True
+│    └─Sequential (6)                                        [32, 112, 14, 14]    [32, 192, 7, 7]      --                   True
+│    │    └─MBConv (0)                                       [32, 112, 14, 14]    [32, 192, 7, 7]      262,492              True
+│    │    └─MBConv (1)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      587,952              True
+│    │    └─MBConv (2)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      587,952              True
+│    │    └─MBConv (3)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      587,952              True
+│    └─Sequential (7)                                        [32, 192, 7, 7]      [32, 320, 7, 7]      --                   True
+│    │    └─MBConv (0)                                       [32, 192, 7, 7]      [32, 320, 7, 7]      717,232              True
+│    └─Conv2dNormActivation (8)                              [32, 320, 7, 7]      [32, 1280, 7, 7]     --                   True
+│    │    └─Conv2d (0)                                       [32, 320, 7, 7]      [32, 1280, 7, 7]     409,600              True
+│    │    └─BatchNorm2d (1)                                  [32, 1280, 7, 7]     [32, 1280, 7, 7]     2,560                True
+│    │    └─SiLU (2)                                         [32, 1280, 7, 7]     [32, 1280, 7, 7]     --                   --
+├─AdaptiveAvgPool2d (avgpool)                                [32, 1280, 7, 7]     [32, 1280, 1, 1]     --                   --
+├─Sequential (classifier)                                    [32, 1280]           [32, 1000]           --                   True
+│    └─Dropout (0)                                           [32, 1280]           [32, 1280]           --                   --
+│    └─Linear (1)                                            [32, 1280]           [32, 1000]           1,281,000            True
+============================================================================================================================================
+Total params: 5,288,548
+Trainable params: 5,288,548
+Non-trainable params: 0
+Total mult-adds (G): 12.35
+============================================================================================================================================
+Input size (MB): 19.27
+Forward/backward pass size (MB): 3452.35
+Params size (MB): 21.15
+Estimated Total Size (MB): 3492.77
+============================================================================================================================================
+```
+
 ### "Freezing" and "Unfreezing" layers
 
 The process of transfer learning usually goes: 
@@ -1417,7 +1485,84 @@ Params size (MB): 21.15
 Estimated Total Size (MB): 3492.77
 ============================================================================================================================================
 ```
-Now in order to "unfreeze" you're desired layers (most likely just the output layer), the easiest way to do this would be to just redeclare your output block.
+
+**NOTE**: Some parameters can be left unfrozen if not specified correctly. For example, the last block in this example model has the attribute `classifier`, not `features`. Therefore, looping over `model.features.parameters()` does not affect the gradients of this block. If you wanted to change the trainability of this block, you can loop over `model.classifier.parameters()` or just `model.parameters()` if you wanted to loop over everything in your model.
+
+Example:
+
+```python
+# Freeze all base layers of the model
+for param in model.parameters():
+    param.requires_grad = False
+
+# Print a summary using torchinfo 
+summary(model=model, 
+        input_size=(32, 3, 224, 224),
+        col_names=["input_size", "output_size", "num_params", "trainable"],
+        col_width=20,
+        row_settings=["var_names"]
+) 
+```
+
+Outputs (scroll right to see trainability column):
+
+```
+============================================================================================================================================
+Layer (type (var_name))                                      Input Shape          Output Shape         Param #              Trainable
+============================================================================================================================================
+EfficientNet (EfficientNet)                                  [32, 3, 224, 224]    [32, 1000]           --                   False
+├─Sequential (features)                                      [32, 3, 224, 224]    [32, 1280, 7, 7]     --                   False
+│    └─Conv2dNormActivation (0)                              [32, 3, 224, 224]    [32, 32, 112, 112]   --                   False
+│    │    └─Conv2d (0)                                       [32, 3, 224, 224]    [32, 32, 112, 112]   (864)                False
+│    │    └─BatchNorm2d (1)                                  [32, 32, 112, 112]   [32, 32, 112, 112]   (64)                 False
+│    │    └─SiLU (2)                                         [32, 32, 112, 112]   [32, 32, 112, 112]   --                   --
+│    └─Sequential (1)                                        [32, 32, 112, 112]   [32, 16, 112, 112]   --                   False
+│    │    └─MBConv (0)                                       [32, 32, 112, 112]   [32, 16, 112, 112]   (1,448)              False
+│    └─Sequential (2)                                        [32, 16, 112, 112]   [32, 24, 56, 56]     --                   False
+│    │    └─MBConv (0)                                       [32, 16, 112, 112]   [32, 24, 56, 56]     (6,004)              False
+│    │    └─MBConv (1)                                       [32, 24, 56, 56]     [32, 24, 56, 56]     (10,710)             False
+│    └─Sequential (3)                                        [32, 24, 56, 56]     [32, 40, 28, 28]     --                   False
+│    │    └─MBConv (0)                                       [32, 24, 56, 56]     [32, 40, 28, 28]     (15,350)             False
+│    │    └─MBConv (1)                                       [32, 40, 28, 28]     [32, 40, 28, 28]     (31,290)             False
+│    └─Sequential (4)                                        [32, 40, 28, 28]     [32, 80, 14, 14]     --                   False
+│    │    └─MBConv (0)                                       [32, 40, 28, 28]     [32, 80, 14, 14]     (37,130)             False
+│    │    └─MBConv (1)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     (102,900)            False
+│    │    └─MBConv (2)                                       [32, 80, 14, 14]     [32, 80, 14, 14]     (102,900)            False
+│    └─Sequential (5)                                        [32, 80, 14, 14]     [32, 112, 14, 14]    --                   False
+│    │    └─MBConv (0)                                       [32, 80, 14, 14]     [32, 112, 14, 14]    (126,004)            False
+│    │    └─MBConv (1)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    (208,572)            False
+│    │    └─MBConv (2)                                       [32, 112, 14, 14]    [32, 112, 14, 14]    (208,572)            False
+│    └─Sequential (6)                                        [32, 112, 14, 14]    [32, 192, 7, 7]      --                   False
+│    │    └─MBConv (0)                                       [32, 112, 14, 14]    [32, 192, 7, 7]      (262,492)            False
+│    │    └─MBConv (1)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    │    └─MBConv (2)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    │    └─MBConv (3)                                       [32, 192, 7, 7]      [32, 192, 7, 7]      (587,952)            False
+│    └─Sequential (7)                                        [32, 192, 7, 7]      [32, 320, 7, 7]      --                   False
+│    │    └─MBConv (0)                                       [32, 192, 7, 7]      [32, 320, 7, 7]      (717,232)            False
+│    └─Conv2dNormActivation (8)                              [32, 320, 7, 7]      [32, 1280, 7, 7]     --                   False
+│    │    └─Conv2d (0)                                       [32, 320, 7, 7]      [32, 1280, 7, 7]     (409,600)            False
+│    │    └─BatchNorm2d (1)                                  [32, 1280, 7, 7]     [32, 1280, 7, 7]     (2,560)              False
+│    │    └─SiLU (2)                                         [32, 1280, 7, 7]     [32, 1280, 7, 7]     --                   --
+├─AdaptiveAvgPool2d (avgpool)                                [32, 1280, 7, 7]     [32, 1280, 1, 1]     --                   --
+├─Sequential (classifier)                                    [32, 1280]           [32, 1000]           --                   False
+│    └─Dropout (0)                                           [32, 1280]           [32, 1280]           --                   --
+│    └─Linear (1)                                            [32, 1280]           [32, 1000]           (1,281,000)          False
+============================================================================================================================================
+Total params: 5,288,548
+Trainable params: 0
+Non-trainable params: 5,288,548
+Total mult-adds (G): 12.35
+============================================================================================================================================
+Input size (MB): 19.27
+Forward/backward pass size (MB): 3452.35
+Params size (MB): 21.15
+Estimated Total Size (MB): 3492.77
+============================================================================================================================================
+```
+
+Now you see that every layer in the model was "frozen", including the classifier block.
+
+In order to "unfreeze" you're desired layers (most likely just the output layer), one way to do it would be to just set `requires_grad = False` for those layers. However, since you will most likely want to modify the output size of this layer anyways, the easiest way to do both at the same time would be to just redeclare your output block.
 
 The current ouput block in this example model is called classifier and consists of:
 

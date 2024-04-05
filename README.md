@@ -1169,7 +1169,7 @@ batch_size = 16
 summary(model, input_size=(batch_size, 1, 28, 28))
 ```
 
-And will produce an output similar to this 
+And will produce an output similar to this:
 
 ```
 ================================================================================================================
@@ -1256,7 +1256,73 @@ This table covers a few.
 |[Weights & Biases Experiment Tracking](https://wandb.ai/site/experiment-tracking)|Minimal, install [`wandb`](https://docs.wandb.ai/quickstart), make an account|Incredible user experience, make experiments public, tracks almost anything.|Requires external resource outside of PyTorch.|Free for personal use|
 |[MLFlow](https://mlflow.org/)|Minimal, install `mlflow` and starting tracking|Fully open-source MLOps lifecycle management, many integrations.|Little bit harder to setup a remote tracking server than other services.|Free|
 
-### TensorBoard
+### Transforming data for transfer learning
+
+When using a pretrained model, it's important that **your custom data going into the model is prepared in the same way as the original training data that went into the model**.
+
+You can manually create these transforms on your data using `transforms.Normalize()` as shown [here](https://www.learnpytorch.io/06_pytorch_transfer_learning/#21-creating-a-transform-for-torchvisionmodels-manual-creation). 
+
+However, as of `torchvision` v0.13+, an automatic transform creation feature has been added.
+
+When you setup a model from `torchvision.models` and select the pretrained model weights you'd like to use, for example, say we'd like to use:
+
+```python
+weights = torchvision.models.EfficientNet_B0_Weights.DEFAULT
+
+weights
+# Outputs: EfficientNet_B0_Weights.IMAGENET1K_V1
+```
+
+
+Where,
+- `EfficientNet_B0_Weights` is the model architecture weights we'd like to use (there are many differnt model architecture options in `torchvision.models`).
+- `DEFAULT` means the *best available* weights (the best performance in ImageNet).
+
+**Note**: Depending on the model architecture you choose, you may also see other options such as `IMAGENET_V1` and `IMAGENET_V2` where generally the higher version number the better. Though if you want the best available, `DEFAULT` is the easiest option. See the [`torchvision.models` documentation](https://pytorch.org/vision/main/models.html) for more.
+
+Now to access the transforms assosciated with the weights, you can use the `transforms()` method. This is essentially saying "get the data transforms that were used to train the `EfficientNet_B0_Weights` on ImageNet".
+
+Example: 
+
+```python
+# Get the transforms used to create our pretrained weights
+auto_transforms = weights.transforms()
+auto_transforms
+```
+
+Outputs:
+
+```
+ImageClassification(
+    crop_size=[224]
+    resize_size=[256]
+    mean=[0.485, 0.456, 0.406]
+    std=[0.229, 0.224, 0.225]
+    interpolation=InterpolationMode.BICUBIC
+)
+```
+
+The benefit of automatically creating a transform through `weights.transforms()` is that you ensure you're using the same data transformation as the pretrained model used when it was trained.
+
+However, the tradeoff of using automatically created transforms is a lack of customization.
+
+You can use the automatic transforms that you created as the an input to any argument that takes in a `transforms.Compose` as input, as is the case with the `create_dataloaders()` function for creating `DataLoaders` in `modules/data_setup.py`.
+
+Example:
+
+```python
+# Create training and testing DataLoaders as well as get a list of class names
+train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(train_dir=train_dir,
+                                                                               test_dir=test_dir,
+                                                                               transform=auto_transforms, # perform same data transforms on our own data as the pretrained model
+                                                                               batch_size=32) # set mini-batch size to 32
+
+train_dataloader, test_dataloader, class_names
+```
+
+
+
+## TensorBoard
 
 TensorBoard is a part of the TensorFlow deep learning library and is an excellent way to visualize different parts of your model.
 

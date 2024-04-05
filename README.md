@@ -1315,7 +1315,7 @@ Example:
 train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(train_dir=train_dir,
                                                                                test_dir=test_dir,
                                                                                transform=auto_transforms, # perform same data transforms on our own data as the pretrained model
-                                                                               batch_size=32) # set mini-batch size to 32
+                                                                               batch_size=32) 
 
 train_dataloader, test_dataloader, class_names
 ```

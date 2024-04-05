@@ -1196,11 +1196,30 @@ Estimated Total Size (MB): 0.51
 
 For more information on how to use it, see [here](https://www.learnpytorch.io/06_pytorch_transfer_learning/#33-getting-a-summary-of-our-model-with-torchinfosummary) or the [torchinfo GitHub](https://github.com/TylerYep/torchinfo).
 
-## `timeit`
+## Timing your models
+
+Timing your models can be done easily using the `timeit` library
 
 ```python
 from timeit import default_timer as timer
 ```
+
+Use the timer as such
+
+```python
+# Start the timer
+from timeit import default_timer as timer 
+start_time = timer()
+
+# Train your model
+...
+
+# End the timer and print out how long it took
+end_time = timer()
+print(f"[INFO] Total training time: {end_time-start_time:.3f} seconds")
+```
+
+For more information see [here](https://www.learnpytorch.io/03_pytorch_computer_vision/#32-creating-a-function-to-time-our-experiments).
 
 ## tqdm
 

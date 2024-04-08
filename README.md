@@ -1081,6 +1081,45 @@ In that same vain as above, minibatches should also be set to multiples of 8, bu
 
 ## SciKitLearn train/test split
 
+
+In scikit-learn, the `train_test_split` function is a utility that splits a dataset into random train and test subsets. 
+
+```python
+from sklearn.model_selection import train_test_split
+RANDOM_SEED = 42
+
+# Create a split in the data. 80% to the training set and 20% to the testing set
+X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size=0.8, random_state=RANDOM_SEED)
+```
+
+### Creating a Development / Cross-validation set
+
+Development sets are further subsets of the data. They are useful because this subset of the dataset can be used to evaluate a model's performance during training. It helps in tuning hyperparameters and assessing how well the model generalizes to new, unseen data. By having a separate validation set, the model's performance can be assessed without biasing hyperparameter tuning decisions based on the test set's results. This helps prevent overfitting and ensures that the model generalizes well to unseen data.
+
+If you want to create a dev / cross-validation set, you can further split the data by calling the `train_test_split` function again. However, you will have to calculate what percent of the subsetted data you will need to split in order to get the percent of the total data into your dev set.
+
+For example, if you have 100 samples total, and you want to get 10 samples (10% of the total) into your dev set, assuming you did a 80/20 split first on the training and test set:
+- If you create a dev set by splitting up the testing set (most commmon practice), you will need to split 50% of the data to get the desired 10% split of the total data
+- If you create a dev set by splitting up the training set, you will need to split 12.5% of the data to get the desired 10% split of the total data
+
+Example:
+
+```python
+p_train_data = 0.8
+desired_p_dev_set_split = 0.1
+data_to_split = "test"
+
+# Create dev set by splitting up the test set (most common)
+if data_to_split == "split_train" and desired_p_dev_set_split <= (1 - p_train_data): # Only split test set if mathematically possible
+    actual_p_dev_set_split = round((1 / (1 - p_train_data)) * (desired_p_dev_set_split), 4)
+    X_dev, X_test, y_dev, y_test = train_test_split(X_test, y_test, train_size=actual_p_dev_set_split, random_state=RANDOM_SEED)
+
+# Create dev set by splitting up the train set
+if data_to_split == "split_train" and desired_p_dev_set_split <= p_train_data: # Only split train set if mathematically possible
+    actual_p_dev_set_split = round((1 / (p_train_data)) * (desired_p_dev_set_split), 4)
+    X_dev, X_train, y_dev, y_train = train_test_split(X_train, y_train, train_size=actual_p_dev_set_split, random_state=RANDOM_SEED)
+```
+
 ## TorchMetrics
 
 TorchMetrics is a library in PyTorch specifically designed for efficient metrics computation in machine learning and deep learning tasks. It provides a wide range of metrics commonly used for evaluating model performance during training and validation. Some of these include:

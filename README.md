@@ -1291,6 +1291,8 @@ Often times machine learning architects will start a new data science project by
 |**`timm` (PyTorch Image Models) library**|Almost all of the latest and greatest computer vision models in PyTorch code as well as plenty of other helpful computer vision features.|https://github.com/rwightman/pytorch-image-models|
 |**Paperswithcode**|A collection of the latest state-of-the-art machine learning papers with code implementations attached. You can also find benchmarks here of model performance on different tasks.|https://paperswithcode.com/|
 
+**Note**: Often times with transfer learning you'll want to pick a pre-trained model that offers the best performance without having too many parameters. This is a trade off you'll have to make to ensure your models don't take too long to run. Take a look at the accuracy and parameter values closely for each model.
+
 ### Transforming data for transfer learning
 
 When using a pretrained model, it's important that **your custom data going into the model is prepared in the same way as the original training data that went into the model**.

@@ -1810,26 +1810,31 @@ def train(model: torch.nn.Module,
           epochs: int,
           device: torch.device, 
           writer: torch.utils.tensorboard.writer.SummaryWriter # new parameter to take in a writer
-    
+          ):
     ...
 
-    # Use the writer parameter to track experiments 
-    # See if there's a writer, if so, log to it
-    if writer:
-        # Add results to SummaryWriter
-        writer.add_scalars(main_tag="Loss", 
-                            tag_scalar_dict={"train_loss": train_loss,
-                                            "test_loss": test_loss},
-                            global_step=epoch)
-        writer.add_scalars(main_tag="Accuracy", 
-                            tag_scalar_dict={"train_acc": train_acc,
-                                            "test_acc": test_acc}, 
-                            global_step=epoch)
+    # Loop through training and testing steps for a number of epochs
+    for epoch in tqdm(range(epochs)):
+    
+        ...
 
-        # Close the writer
-        writer.close()
-    else:
-        pass
+        # Use the writer parameter to track experiments 
+        # See if there's a writer, if so, log to it
+        if writer:
+            # Add results to SummaryWriter
+            writer.add_scalars(main_tag="Loss", 
+                                tag_scalar_dict={"train_loss": train_loss,
+                                                "test_loss": test_loss},
+                                global_step=epoch)
+            writer.add_scalars(main_tag="Accuracy", 
+                                tag_scalar_dict={"train_acc": train_acc,
+                                                "test_acc": test_acc}, 
+                                global_step=epoch)
+
+            # Close the writer
+            writer.close()
+        else:
+            pass
 ```
 
 When calling your `train` function, you can directly pass paramters to the writer parameters using the writer helper function.

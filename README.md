@@ -1838,15 +1838,15 @@ Example:
 
 ```python
 train(model=model,
-                  train_dataloader=train_dataloader,
-                  test_dataloader=test_dataloader, 
-                  optimizer=optimizer,
-                  loss_fn=loss_fn,
-                  epochs=epochs,
-                  device=device,
-                  writer=create_writer(experiment_name=dataloader_name, # writer parameters passed in programmatically with create_writer function
-                                       model_name=model_name,
-                                       extra=f"{epochs}_epochs"))
+      train_dataloader=train_dataloader,
+      test_dataloader=test_dataloader, 
+      optimizer=optimizer,
+      loss_fn=loss_fn,
+      epochs=epochs,
+      device=device,
+      writer=create_writer(experiment_name=dataloader_name, # writer parameters passed in programmatically with create_writer function
+                          model_name=model_name,
+                          extra=f"{epochs}_epochs"))
 ```
 
 ## Adding batch dimensions

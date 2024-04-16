@@ -1799,6 +1799,56 @@ def create_writer(experiment_name: str,
     return SummaryWriter(log_dir=log_dir)
 ```
 
+Now when training a model, you can add this kind of code to add save information about your runs to a file
+
+```python
+def train(model: torch.nn.Module, 
+          train_dataloader: torch.utils.data.DataLoader, 
+          test_dataloader: torch.utils.data.DataLoader, 
+          optimizer: torch.optim.Optimizer,
+          loss_fn: torch.nn.Module,
+          epochs: int,
+          device: torch.device, 
+          writer: torch.utils.tensorboard.writer.SummaryWriter # new parameter to take in a writer
+    
+    ...
+
+    # Use the writer parameter to track experiments 
+    # See if there's a writer, if so, log to it
+    if writer:
+        # Add results to SummaryWriter
+        writer.add_scalars(main_tag="Loss", 
+                            tag_scalar_dict={"train_loss": train_loss,
+                                            "test_loss": test_loss},
+                            global_step=epoch)
+        writer.add_scalars(main_tag="Accuracy", 
+                            tag_scalar_dict={"train_acc": train_acc,
+                                            "test_acc": test_acc}, 
+                            global_step=epoch)
+
+        # Close the writer
+        writer.close()
+    else:
+        pass
+```
+
+When calling your `train` function, you can directly pass paramters to the writer parameters using the writer helper function.
+
+Example:
+
+```python
+train(model=model,
+                  train_dataloader=train_dataloader,
+                  test_dataloader=test_dataloader, 
+                  optimizer=optimizer,
+                  loss_fn=loss_fn,
+                  epochs=epochs,
+                  device=device,
+                  writer=create_writer(experiment_name=dataloader_name, # writer parameters passed in programmatically with create_writer function
+                                       model_name=model_name,
+                                       extra=f"{epochs}_epochs"))
+```
+
 ## Adding batch dimensions
 
 with `.unsqueeze()`

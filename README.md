@@ -20,6 +20,14 @@ Tensors are used extensively in various fields, including physics (especially in
 
 All data inputted and outputted out of models in PyTorch need to be represented as tensors.
 
+### The 3 most common issues in machine learning with PyTorch
+
+In PyTorch, most of your data will be stored in tensors. When tensors are being slung around and computed upon, there are three common issues that can arise:
+
+1. **Shape errors** - You're trying to perform an operation on matrices/tensors with shapes that don't line up. For example, your data's shape is `[1, 28, 28]` but your first layer takes an input of `[10]`.
+2. **Device errors** - Your model is on a different device to your data. For example your model is on the GPU (e.g. `"cuda"`) and your data is on the CPU (e.g. `"cpu"`).
+3. **Datatype errors** - Your data is one datatype (e.g. `torch.float32`), however the operation you're trying to perform requires another datatype (e.g. `torch.int64`).
+
 ### Tensor Size, Shape and Dimensions
 
 In PyTorch, it's important to not conflate the concepts of tensor dimensions and tensor size and shape.
@@ -1184,8 +1192,78 @@ Mini-batches are subsets of a dataset used during the training process of machin
 
 In that same vain as above, minibatches should also be set to multiples of 8, but also it is often recommended to use minibatches of [around 32](https://arxiv.org/abs/1804.07612), especially when first starting building your model, as this strikes a balance between utilizing GPU memory efficiently and allowing for a reasonable training speed.
 
-## SciKitLearn train/test split
+## Batch dimensions
 
+In PyTorch, adding batch dimensions is often necessary because most neural network models expect inputs with batch dimensions. A batch dimension represents the number of samples processed simultaneously by the model. For example, if you have an image classification model, the input tensor is typically of shape `batch_size, channels, height, width`, where `batch_size` represents the number of images processed in a batch.
+
+### Adding batch dimensions
+
+`.unsqueeze()` is a PyTorch tensor method used to add dimensions to a tensor. It takes an integer argument `dim`, which specifies the position where the new dimension will be inserted.
+
+Example:
+
+```python
+# Define image dimensions
+channels = 3  # RGB channels
+height = 128
+width = 128
+
+# Generate random image tensor
+random_image = torch.randn(channels, height, width)
+
+print(random_image.shape) 
+# Output: torch.Size([3, 128, 128])
+
+# Add a batch dimension to the image tensor
+random_image_with_batch = random_image.unsqueeze(0)
+
+print(random_image_with_batch.shape) 
+# Output: torch.Size([1, 3, 128, 128])
+```
+
+This is useful for situtions where you are need to pass some data through a system that requires a batch dimension (e.g. performing a forward pass in a PyTorch Model).
+
+
+## Concatenating tensors
+
+In PyTorch, `torch.cat()` is a function used for concatenating tensors along a specified dimension. It concatenates the given sequence of tensors in the specified dimension.
+
+Here's the syntax:
+
+```python
+torch.cat(tensors, dim=0, *, out=None) → Tensor
+```
+- `tensors`: A sequence of tensors to concatenate.
+- `dim` (optional): The dimension along which the tensors will be concatenated. Defaults to `0`.
+- `out` (optional): If provided, the output tensor will be placed into this pre-allocated tensor. Its `shape` and `dtype` must be compatible with the expected result. Default is `None`.
+
+Example:
+
+```python
+import torch
+
+# Create some tensors
+tensor1 = torch.tensor([[1, 2], [3, 4]])
+tensor2 = torch.tensor([[5, 6], [7, 8]])
+tensor3 = torch.tensor([[9, 10]])
+
+# Concatenate along dimension 0 (rows)
+result = torch.cat((tensor1, tensor2, tensor3), dim=0)
+
+print(result)
+```
+
+Outputs:
+
+```
+tensor([[ 1,  2],
+        [ 3,  4],
+        [ 5,  6],
+        [ 7,  8],
+        [ 9, 10]])
+```
+
+## SciKitLearn train/test split
 
 In scikit-learn, the `train_test_split` function is a utility that splits a dataset into random train and test subsets. 
 
@@ -1957,104 +2035,6 @@ train(model=model,
       writer=create_writer(experiment_name=dataloader_name, # writer parameters passed in programmatically with create_writer function
                           model_name=model_name,
                           extra=f"{epochs}_epochs"))
-```
-
-## Batch dimensions
-
-In PyTorch, adding batch dimensions is often necessary because most neural network models expect inputs with batch dimensions. A batch dimension represents the number of samples processed simultaneously by the model. For example, if you have an image classification model, the input tensor is typically of shape `batch_size, channels, height, width`, where `batch_size` represents the number of images processed in a batch.
-
-### Adding batch dimensions
-
-`.unsqueeze()` is a PyTorch tensor method used to add dimensions to a tensor. It takes an integer argument `dim`, which specifies the position where the new dimension will be inserted.
-
-Example:
-
-```python
-# Define image dimensions
-channels = 3  # RGB channels
-height = 128
-width = 128
-
-# Generate random image tensor
-random_image = torch.randn(channels, height, width)
-
-print(random_image.shape) 
-# Output: torch.Size([3, 128, 128])
-
-# Add a batch dimension to the image tensor
-random_image_with_batch = random_image.unsqueeze(0)
-
-print(random_image_with_batch.shape) 
-# Output: torch.Size([1, 3, 128, 128])
-```
-
-This is useful for situtions where you are need to pass some data through a system that requires a batch dimension (e.g. performing a forward pass in a PyTorch Model).
-
-### Removing batch dimensions
-
-`.squeeze()` is a PyTorch tensor method used to remove dimensions from a tensor. It removes all dimensions of size 1 from the tensor.
-
-Example:
-
-```python
-# Define image dimensions
-batch_size = 1
-channels = 3  # RGB channels
-height = 128
-width = 128
-
-# Generate random image tensor
-random_image_with_batch = torch.randn(batch_size, channels, height, width)
-
-print(random_image_with_batch.shape) 
-# Output: torch.Size([1, 3, 128, 128])
-
-# Remove the batch dimension to the image tensor
-random_image_without_batch = random_image_with_batchrandom_image_with_batch.squeeze()
-
-print(random_image_without_batch.shape) 
-# Output: torch.Size([3, 128, 128])
-```
-
-This is useful for situtions where you want just the image itself to avoid shape errors (e.g. visualizing with Matplotlib).
-
-## Concatenating tensors
-
-In PyTorch, `torch.cat()` is a function used for concatenating tensors along a specified dimension. It concatenates the given sequence of tensors in the specified dimension.
-
-Here's the syntax:
-
-```python
-torch.cat(tensors, dim=0, *, out=None) → Tensor
-```
-- `tensors`: A sequence of tensors to concatenate.
-- `dim` (optional): The dimension along which the tensors will be concatenated. Defaults to `0`.
-- `out` (optional): If provided, the output tensor will be placed into this pre-allocated tensor. Its `shape` and `dtype` must be compatible with the expected result. Default is `None`.
-
-Example:
-
-```python
-import torch
-
-# Create some tensors
-tensor1 = torch.tensor([[1, 2], [3, 4]])
-tensor2 = torch.tensor([[5, 6], [7, 8]])
-tensor3 = torch.tensor([[9, 10]])
-
-# Concatenate along dimension 0 (rows)
-result = torch.cat((tensor1, tensor2, tensor3), dim=0)
-
-print(result)
-```
-
-Outputs:
-
-```
-tensor([[ 1,  2],
-        [ 3,  4],
-        [ 5,  6],
-        [ 7,  8],
-        [ 9, 10]])
 ```
 
 ## Dropout

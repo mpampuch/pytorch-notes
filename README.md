@@ -1076,7 +1076,7 @@ Take a look at the `modules` directory to see how all these python scripts inter
 
 ## `model.parameters` vs `model.state_dict`
 
-In PyTorch, both model.parameters() and model.state_dict() are methods of viewing the parameters of a neural network model, but they are used in seperate circumstances:
+In PyTorch, both `model.parameters()` and `model.state_dict()` are methods of viewing the parameters of a neural network model, but they are used in seperate circumstances:
 
 `model.parameters()` returns an iterator over all the learnable parameters of the model. These parameters include weights and biases of layers such as linear layers, convolutional layers, etc.
 

@@ -89,6 +89,14 @@ This will ensure all data is on the same device, especially if a GPU is not avai
 
 **Note:** If you are working with NumPy data, that data can only exist on a CPU. If a GPU is available and PyTorch data is sent to the GPU, you can still encounter device errors when working with these two types of data. Use `torch.Tensor.cpu()` on NumPy data to fix this.
 
+**Also note:** To run data/models on an Apple Silicon GPU, use the PyTorch device name `"mps"` with `.to("mps")`. MPS stands for Metal Performance Shaders, Metal is Apple's GPU framework.
+
+```python
+# Set up device agnostic code on Apple MacBook Pro
+device = "mps" if if torch.backends.mps.is_available() else "cpu"
+print(f"Using device: {device}")
+```
+
 ### Figuring out if you're on a GPU
 
 To check if you're running on a GPU in Google Collab, you can run
@@ -207,6 +215,59 @@ tensor([[3.1821e-09, 1.6482e-08, 9.9999e-01, 9.6600e-06, 1.1463e-07, 1.9554e-10,
 The predicted label is:
 tensor([2])
 ```
+
+### Instantiating your model
+
+Once you've built a model class in PyTorch, you need to instantiate it before you can use it for training, inference, or any other tasks.
+
+Example:
+
+```python
+# Define your model class
+class MyModel(nn.Module):
+    def __init__(self):
+        super(MyModel, self).__init__()
+        self.fc1 = nn.Linear(10, 20)
+        self.fc2 = nn.Linear(20, 1)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+# Instantiate your model
+model = MyModel().to(device)
+```
+
+If you want to re-train a model with different parameters or different data, you should create a new instance of the model class to randomly initialize the weights
+
+#### Compiling a model
+
+As of PyTorch 2.0, you can now compile your models with `torch.compile()`. After you create your model, you can pass it to `torch.compile()` and in turn expect speedups in training and inference on newer GPUs (e.g. NVIDIA RTX 40 series, A100, H100, the newer the GPU the more noticeable the speedups).
+
+Example:
+
+```python
+# Define your model class
+class MyModel(nn.Module):
+    def __init__(self):
+        super(MyModel, self).__init__()
+        self.fc1 = nn.Linear(10, 20)
+        self.fc2 = nn.Linear(20, 1)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+# Instantiate your model
+model = MyModel().to(device)
+compiled_model = torch.compile(model).to(device)
+```
+
+For more information on compiled models see [here](https://www.learnpytorch.io/pytorch_2_intro/).
 
 ## Convolutional Neural Networks
 
@@ -453,15 +514,29 @@ Now our data flows through the model with no errors and outputs a tensor with a 
 
 Once you've ensured there's no shape issues that can exist in your model you can go ahead and comment out or remove all the `print` statements in the forward function.
 
-
-## Loss functions
-- `nn.CrossEntropyLoss()` creates an instance of the CrossEntropyLoss class, which expects **logits** as inputs (raw scores from the network) and class labels. It internally applies `torch.log_softmax` to the logits before computing the negative log likelihood loss.
-- BCEWithLogitsLoss() # Binary classification
-    - Combines sigmoid activation function with BCELoss. Better than BCELoss because more numerically stable
-
 ## Running a train/test loop
 
-### `optimizer.zero_grad()`
+![Pytorch Training loop](training-loop.png)
+![Pytorch Testing loop](testing-loop.png)
+
+### Loss Functions
+
+Loss functions, also known as cost functions, objective functions or criterion, quantify the difference between the predicted output of a machine learning model and the true target values. They play a crucial role in training machine learning models by providing a measure of how well the model is performing.
+
+In PyTorch, loss functions are typically implemented as subclasses of `torch.nn.Module`, and they can be found in the `torch.nn` module. 
+
+#### `nn.CrossEntropyLoss()` 
+
+`nn.CrossEntropyLoss()` is one of the most common loss functions used for **multi-class classification tasks**. It creates an instance of the `CrossEntropyLoss` class, which expects **logits** as inputs (raw scores from the network) and class labels. It internally applies `torch.log_softmax` to the logits before computing the negative log likelihood loss.
+
+#### `nn.BCEWithLogitsLoss()` 
+`nn.BCEWithLogitsLoss()` is used for **binary classification tasks**. It combines sigmoid activation function with `BCELoss`. It is better than `nn.BCELoss` because more numerically stable.
+
+### Optimizers
+
+Optimizers in PyTorch are classes that implement various optimization algorithms. They are used to update the parameters (weights and biases) of neural network models during the training process in order to minimize the loss function.
+
+#### `optimizer.zero_grad()`
 
 `optimizer.zero_grad()` is used to clear the gradients of all optimized tensors. Here's why it's necessary:
 
@@ -473,7 +548,7 @@ Once you've ensured there's no shape issues that can exist in your model you can
 
 `optimizer.zero_grad()` ensures that you start each optimization step with fresh gradients, avoiding gradient accumulation issues and improving training stability and efficiency. It's an essential step in the training loop when using gradient-based optimization algorithms like stochastic gradient descent (SGD), Adam, etc.
 
-### `optimizer.step()`
+#### `optimizer.step()`
 
 When you call the `.step()` function on an optimizer in PyTorch, it performs a single optimization step. Here's what happens during this step:
 
@@ -491,6 +566,39 @@ The learning rate controls the step size of the update. Other optimization algor
 **Gradient Clearing**: After the parameter update, the gradients are cleared for the next iteration. This prevents gradients from accumulating across multiple `backward()` calls.
 
 Calling `optimizer.step()` thus iterates through all the parameters registered with the optimizer, updates them according to their respective gradients and the optimization algorithm's update rule, and clears the gradients for the next iteration. This process is central to the training loop of a neural network, where parameters are iteratively updated to minimize the loss function and improve the model's performance.
+
+### Setting the model to training mode
+
+When you call `model.train()`, you are telling PyTorch that you are starting the training phase. This has implications for certain modules within the model.
+
+Here's what `model.train()` does:
+
+- **Activates Dropout:** Dropout layers randomly zero some of the input elements during training to prevent overfitting. Calling `model.train()` ensures that dropout layers are activated, meaning they will perform this random zeroing during forward pass.
+- **Activates Batch Normalization:** Batch normalization layers compute the mean and standard deviation of the input batch during training and normalize the input accordingly. When you call `model.train()`, batch normalization layers are activated to compute these statistics.
+- **Updates Parameters:** During training, the model's parameters (weights and biases) are updated based on the computed gradients during the backward pass. Calling `model.train()` indicates to PyTorch that parameter updates should occur.
+- **Sets Autograd Tracking:** PyTorch keeps track of operations on tensors for automatic differentiation. During training, `model.train()` ensures that all operations are tracked for computing gradients during the backward pass.
+
+### Setting the model to evaluation mode
+
+When you call `model.eval()`, you are telling PyTorch that you are starting the evaluation phase. This has implications for certain modules within the model.
+
+Here's what `model.eval()` does:
+
+- **Deactivates Dropout:** Dropout layers are deactivated during evaluation to ensure deterministic behavior. During inference, you want the model to use all available information, so dropout is turned off.
+- **Deactivates Batch Normalization:** Batch normalization layers behave differently during evaluation compared to training. During training, they compute batch statistics, but during evaluation, they use precomputed running statistics to ensure consistent behavior.
+- **Freezes Parameters:** During evaluation, the model's parameters are not updated. This ensures that the model does not learn during inference.
+- **Disables Autograd Tracking:** PyTorch disables autograd tracking during evaluation to save memory and computation. This means that operations on tensors are not tracked for computing gradients during the backward pass.
+
+### Optimizing PyTorch for inference
+
+`torch.inference_mode()` was introduced in PyTorch 1.6.0 and serves a similar purpose to `model.eval()`. It is used to set PyTorch into a mode optimized for inference, which is typically performed after the model has been trained and is ready for deployment.
+
+Here's what `torch.inference_mode()` does:
+
+- **Deactivates Dropout:** Dropout layers are deactivated during inference to ensure deterministic behavior. During training, dropout randomly zeroes some of the input elements, but during inference, you want the model to use all available information.
+- **Deactivates Batch Normalization:** Similar to model.eval(), batch normalization layers behave differently during inference compared to training. They use precomputed running statistics rather than computing batch statistics during inference to ensure consistent behavior.
+- **Freezes Parameters:** During inference, the model's parameters are not updated. This ensures that the model does not learn during inference, which is when it makes predictions on new data.
+- **Disables Autograd Tracking:** Autograd tracking is disabled during inference to save memory and computation. This means that operations on tensors are not tracked for computing gradients during the backward pass.
 
 ## Saving a model 
 
@@ -971,9 +1079,6 @@ However, if you wanted to view the parameters of your model yourself, the output
 `model.state_dict()` returns a dictionary containing the entire state of the model, including parameters and other persistent buffers. The keys of the dictionary are the names of the parameters, and the values are the parameter tensors.
 
 This method is often used for checkpointing the model or for saving and loading model weights and configurations, but can also be used to preview the parameters of a model (however if the model get's too big then the output of this method will also become uninterpretable and other methods of checking the models parameters will need to be employed).
-
-
-## `model.train()`, `model.eval()`, and `torch.inference_mode()` 
 
 ## Random Seeds 
 
@@ -1854,12 +1959,64 @@ train(model=model,
                           extra=f"{epochs}_epochs"))
 ```
 
-## Adding batch dimensions
+## Batch dimensions
 
-with `.unsqueeze()`
+In PyTorch, adding batch dimensions is often necessary because most neural network models expect inputs with batch dimensions. A batch dimension represents the number of samples processed simultaneously by the model. For example, if you have an image classification model, the input tensor is typically of shape `batch_size, channels, height, width`, where `batch_size` represents the number of images processed in a batch.
 
+### Adding batch dimensions
 
-## `requires_grad()`
+`.unsqueeze()` is a PyTorch tensor method used to add dimensions to a tensor. It takes an integer argument `dim`, which specifies the position where the new dimension will be inserted.
+
+Example:
+
+```python
+# Define image dimensions
+channels = 3  # RGB channels
+height = 128
+width = 128
+
+# Generate random image tensor
+random_image = torch.randn(channels, height, width)
+
+print(random_image.shape) 
+# Output: torch.Size([3, 128, 128])
+
+# Add a batch dimension to the image tensor
+random_image_with_batch = random_image.unsqueeze(0)
+
+print(random_image_with_batch.shape) 
+# Output: torch.Size([1, 3, 128, 128])
+```
+
+This is useful for situtions where you are need to pass some data through a system that requires a batch dimension (e.g. performing a forward pass in a PyTorch Model).
+
+### Removing batch dimensions
+
+`.squeeze()` is a PyTorch tensor method used to remove dimensions from a tensor. It removes all dimensions of size 1 from the tensor.
+
+Example:
+
+```python
+# Define image dimensions
+batch_size = 1
+channels = 3  # RGB channels
+height = 128
+width = 128
+
+# Generate random image tensor
+random_image_with_batch = torch.randn(batch_size, channels, height, width)
+
+print(random_image_with_batch.shape) 
+# Output: torch.Size([1, 3, 128, 128])
+
+# Remove the batch dimension to the image tensor
+random_image_without_batch = random_image_with_batchrandom_image_with_batch.squeeze()
+
+print(random_image_without_batch.shape) 
+# Output: torch.Size([3, 128, 128])
+```
+
+This is useful for situtions where you want just the image itself to avoid shape errors (e.g. visualizing with Matplotlib).
 
 ## Concatenating tensors
 

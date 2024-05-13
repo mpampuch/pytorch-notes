@@ -73,7 +73,8 @@ To convert NumPy arrays to PyTorch tensors, use the followings code and tools.
 - For type coersion, `torch.from_numpy(ndarray).type(torch.float32)` 
 - To convert PyTorch data on GPU to Numpy, use `torch.Tensor.cpu()`
 
-**Note**: NumPy arrays cannot be generated from tensors that require gradient computation. Use `torch.Tensor.detach()` to remove tensors from computatation graphs.
+> [!NOTE] 
+> NumPy arrays cannot be generated from tensors that require gradient computation. Use `torch.Tensor.detach()` to remove tensors from computatation graphs.
 
 ## Device agnostic code
 
@@ -95,9 +96,11 @@ torch.Tensor.to(device)
 
 This will ensure all data is on the same device, especially if a GPU is not available.
 
-**Note:** If you are working with NumPy data, that data can only exist on a CPU. If a GPU is available and PyTorch data is sent to the GPU, you can still encounter device errors when working with these two types of data. Use `torch.Tensor.cpu()` on NumPy data to fix this.
+> [!NOTE] 
+> If you are working with NumPy data, that data can only exist on a CPU. If a GPU is available and PyTorch data is sent to the GPU, you can still encounter device errors when working with these two types of data. Use `torch.Tensor.cpu()` on NumPy data to fix this.
 
-**Also note:** To run data/models on an Apple Silicon GPU, use the PyTorch device name `"mps"` with `.to("mps")`. MPS stands for Metal Performance Shaders, Metal is Apple's GPU framework.
+> [!NOTE] 
+> To run data/models on an Apple Silicon GPU, use the PyTorch device name `"mps"` with `.to("mps")`. MPS stands for Metal Performance Shaders, Metal is Apple's GPU framework.
 
 ```python
 # Set up device agnostic code on Apple MacBook Pro
@@ -618,7 +621,8 @@ For saving and loading models in PyTorch, there are three main methods you shoul
 |[`torch.load`](https://pytorch.org/docs/stable/torch.html?highlight=torch%20load#torch.load)|Uses `pickle`'s unpickling features to deserialize and load pickled Python object files (like models, tensors or dictionaries) into memory. You can also set which device to load the object to (CPU, GPU etc).|
 |[`torch.nn.Module.load_state_dict`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=load_state_dict#torch.nn.Module.load_state_dict)|Loads a model's parameter dictionary (`model.state_dict()`) using a saved `state_dict()` object.|
 
-**Note**: As stated in [Python's `pickle` documentation](https://docs.python.org/3/library/pickle.html), the `pickle` module **is not secure**. That means you should only ever unpickle (load) data you trust. That goes for loading PyTorch models as well. Only ever use saved PyTorch models from sources you trust.
+> [!NOTE] 
+> As stated in [Python's `pickle` documentation](https://docs.python.org/3/library/pickle.html), the `pickle` module **is not secure**. That means you should only ever unpickle (load) data you trust. That goes for loading PyTorch models as well. Only ever use saved PyTorch models from sources you trust.
 
 ### PyTorch model's `state_dict()`
 
@@ -632,7 +636,8 @@ This can be done a few steps:
 
 3. Call `torch.save(obj, f)` where `obj` is the target model's `state_dict()` and `f` is the filename of where to save the model.
 
-**Note**: It's common convention for PyTorch saved models or objects to end with `.pt` or `.pth`.
+> [!NOTE] 
+> It's common convention for PyTorch saved models or objects to end with `.pt` or `.pth`.
 
 Example: 
 
@@ -714,7 +719,8 @@ Images typically have 3 dimensions: Height (`H`), Width(`W`), and Colour Channel
 
 There's debate on whether images should be represented as `CHW` (color channels first) or `HWC` (color channels last).
 
-**Note**: You'll also see `NCHW` and `NHWC` formats where `N` stands for number of images. For example if you have a `batch_size=32`, your tensor shape may be `[32, 1, 28, 28]`. 
+> [!NOTE] 
+> You'll also see `NCHW` and `NHWC` formats where `N` stands for number of images. For example if you have a `batch_size=32`, your tensor shape may be `[32, 1, 28, 28]`. 
 
 PyTorch generally accepts `NCHW` (channels first) as the default for many operators.
 
@@ -770,7 +776,8 @@ EXAMPLE_IMAGE_TENSOR = torch.randn(64, 64, 3)
 plt.imshow(EXAMPLE_IMAGE_TENSOR.detach().cpu().numpy()) # Notice the detaching and conversion
 ```
 
-**Note**: If the `torch.Tensor.detach()` method is ever not enough to solve this problem, try prefixing it with the `torch.Tensor.clone()` method (e.g. `EXAMPLE_IMAGE_TENSOR.clone().detach().cpu().numpy()`). This should most resolve any error you'd encounter.
+> [!NOTE] 
+> If the `torch.Tensor.detach()` method is ever not enough to solve this problem, try prefixing it with the `torch.Tensor.clone()` method (e.g. `EXAMPLE_IMAGE_TENSOR.clone().detach().cpu().numpy()`). This should most resolve any error you'd encounter.
 
 ## Inspecting datasets
 
@@ -1474,7 +1481,8 @@ Often times machine learning architects will start a new data science project by
 |**`timm` (PyTorch Image Models) library**|Almost all of the latest and greatest computer vision models in PyTorch code as well as plenty of other helpful computer vision features.|https://github.com/rwightman/pytorch-image-models|
 |**Paperswithcode**|A collection of the latest state-of-the-art machine learning papers with code implementations attached. You can also find benchmarks here of model performance on different tasks.|https://paperswithcode.com/|
 
-**Note**: Often times with transfer learning you'll want to pick a pre-trained model that offers the best performance without having too many parameters. This is a trade off you'll have to make to ensure your models don't take too long to run. Take a look at the accuracy and parameter values closely for each model.
+> [!NOTE] 
+> Often times with transfer learning you'll want to pick a pre-trained model that offers the best performance without having too many parameters. This is a trade off you'll have to make to ensure your models don't take too long to run. Take a look at the accuracy and parameter values closely for each model.
 
 ### Transforming data for transfer learning
 
@@ -1498,7 +1506,8 @@ Where,
 - `EfficientNet_B0_Weights` is the model architecture weights we'd like to use (there are many differnt model architecture options in `torchvision.models`).
 - `DEFAULT` means the *best available* weights (the best performance in ImageNet).
 
-**Note**: Depending on the model architecture you choose, you may also see other options such as `IMAGENET_V1` and `IMAGENET_V2` where generally the higher version number the better. Though if you want the best available, `DEFAULT` is the easiest option. See the [`torchvision.models` documentation](https://pytorch.org/vision/main/models.html) for more.
+> [!NOTE] 
+> Depending on the model architecture you choose, you may also see other options such as `IMAGENET_V1` and `IMAGENET_V2` where generally the higher version number the better. Though if you want the best available, `DEFAULT` is the easiest option. See the [`torchvision.models` documentation](https://pytorch.org/vision/main/models.html) for more.
 
 Now to access the transforms assosciated with the weights, you can use the `transforms()` method. This is essentially saying "get the data transforms that were used to train the `EfficientNet_B0_Weights` on ImageNet".
 
@@ -1545,7 +1554,6 @@ train_dataloader, test_dataloader, class_names
 Once you have a pre-trained model you would like to use as a scaffold, the next step is to download it into your environment so that you can begin tweaking it.
 
 This can be done as shown:
-- **Note**: as of `torchvision v0.13+`, downloading a model also involves the use of the `.DEFAULT` attrubute
 
 ```python
 # OLD: Setup the model with pretrained weights and send it to the target device (this was prior to torchvision v0.13)
@@ -1555,6 +1563,9 @@ This can be done as shown:
 weights = torchvision.models.EfficientNet_B0_Weights.DEFAULT # .DEFAULT = best available weights 
 model = torchvision.models.efficientnet_b0(weights=weights).to(device)
 ```
+
+> [!NOTE] 
+> As of `torchvision v0.13+`, downloading a model also involves the use of the `.DEFAULT` attrubute
 
 Now you can observe your model with torchinfo
 
@@ -1710,7 +1721,8 @@ Estimated Total Size (MB): 3492.77
 ============================================================================================================================================
 ```
 
-**NOTE**: Some parameters can be left unfrozen if not specified correctly. For example, the last block in this example model has the attribute `classifier`, not `features`. Therefore, looping over `model.features.parameters()` does not affect the gradients of this block. If you wanted to change the trainability of this block, you can loop over `model.classifier.parameters()` or just `model.parameters()` if you wanted to loop over everything in your model.
+> [!NOTE] 
+> Some parameters can be left unfrozen if not specified correctly. For example, the last block in this example model has the attribute `classifier`, not `features`. Therefore, looping over `model.features.parameters()` does not affect the gradients of this block. If you wanted to change the trainability of this block, you can loop over `model.classifier.parameters()` or just `model.parameters()` if you wanted to loop over everything in your model.
 
 Example:
 
@@ -1887,7 +1899,9 @@ To summarize all the important details here:
 - **Trainable column** - You'll see that many of the base layers (the ones in the features portion) have their `Trainable` value as `False`. This is because we set their attribute `requires_grad=False`. Unless we change this, these layers won't be updated during furture training.
 - **Output shape** of classifier - The classifier portion of the model now has an `Output Shape` value of `[32, 3]` instead of `[32, 1000]`. It's `Trainable` value is also `True`. This means its parameters will be updated during training. In essence, we're using the features portion to feed our classifier portion a base representation of an image and then our classifier layer is going to learn how to base representation aligns with our problem.
 - **Less trainable parameters** - Previously there was `5,288,548` trainable parameters. But since we froze many of the layers of the model and only left the classifier as trainable, there's now only `3,843` trainable parameters. Though there's also `4,007,548` non-trainable parameters, these will create a base representation of our input images to feed into our classifier layer.
-  - **Note**: The more trainable parameters a model has, the more compute power/longer it takes to train. Freezing the base layers of our model and leaving it with less trainable parameters means our model should train quite quickly. This is one huge benefit of transfer learning, taking the already learned parameters of a model trained on a problem similar to yours and only tweaking the outputs slightly to suit your problem.
+
+> [!NOTE] 
+> The more trainable parameters a model has, the more compute power/longer it takes to train. Freezing the base layers of our model and leaving it with less trainable parameters means our model should train quite quickly. This is one huge benefit of transfer learning, taking the already learned parameters of a model trained on a problem similar to yours and only tweaking the outputs slightly to suit your problem.
 
 You can refer to this slide to quickly understand the desired output a transfer learning model.
 
@@ -2108,7 +2122,8 @@ Often times there is a lot of little code snippets that can make working with, v
 
 Inside of the `modules` directory I've created a file called `helper_functions.py`. This file contains the most useful functions I've made/encountered for working with PyTorch.
 
-**Note**: In a professional setting it may be useful to put these functions inside a `utils.py` file but for the sake of this notes repository I didn't want to pollute the `modules/utils.py` file with code that wasn't relevant to the [Organizing PyTorch projects](#Organizing-PyTorch-projects) section.
+> [!NOTE] 
+> In a professional setting it may be useful to put these functions inside a `utils.py` file but for the sake of this notes repository I didn't want to pollute the `modules/utils.py` file with code that wasn't relevant to the [Organizing PyTorch projects](#Organizing-PyTorch-projects) section.
 
 ## Model deployment
 
